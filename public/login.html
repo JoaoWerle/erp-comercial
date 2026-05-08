@@ -29,9 +29,32 @@
             </div>
 
             <button type="submit" class="btn-primary" id="loginBtn">Entrar no Sistema</button>
-            <div id="errorMsg" class="error-message"></div>
+            <div id="errorMsg" class="error-message" style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; text-align: center; min-height: 1.2rem;"></div>
         </form>
     </div>
+
+    <!-- Modal de Erro de Acesso -->
+    <div id="errorModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);">
+        <div class="modal-content" style="background: white; padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: modalPop 0.3s ease-out;">
+            <div style="width: 64px; height: 64px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            <h2 style="color: #111827; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 700;">Acesso Negado</h2>
+            <p id="modalErrorMsg" style="color: #4b5563; margin-bottom: 0.5rem; line-height: 1.5;"></p>
+            <div id="reasonContainer" style="background: #f9fafb; padding: 1rem; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 1.5rem; text-align: left; display: none;">
+                <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: #9ca3af; font-weight: 600; margin-bottom: 0.25rem;">Motivo informado:</span>
+                <p id="modalErrorReason" style="color: #1f2937; font-weight: 500; font-size: 0.95rem; margin: 0;"></p>
+            </div>
+            <button onclick="closeErrorModal()" style="width: 100%; padding: 0.85rem; background: #111827; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#1f2937'" onmouseout="this.style.background='#111827'">Entendido</button>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -59,7 +82,11 @@
                     localStorage.setItem('erp_user', JSON.stringify(data.user));
                     window.location.href = '/index.html';
                 } else {
-                    errorMsg.innerText = data.error || 'Erro ao realizar login.';
+                    if (data.reason || data.error === 'Sua conta está inativa.') {
+                        showErrorModal(data.error, data.reason);
+                    } else {
+                        errorMsg.innerText = data.error || 'Erro ao realizar login.';
+                    }
                 }
             } catch (error) {
                 errorMsg.innerText = 'Erro de conexão. Tente novamente.';
@@ -68,6 +95,22 @@
                 loginBtn.innerText = 'Entrar no Sistema';
             }
         });
+
+        function showErrorModal(msg, reason) {
+            document.getElementById('modalErrorMsg').innerText = msg;
+            const reasonContainer = document.getElementById('reasonContainer');
+            if (reason) {
+                document.getElementById('modalErrorReason').innerText = reason;
+                reasonContainer.style.display = 'block';
+            } else {
+                reasonContainer.style.display = 'none';
+            }
+            document.getElementById('errorModal').style.display = 'flex';
+        }
+
+        function closeErrorModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
     </script>
 </body>
 </html>

@@ -270,9 +270,9 @@ body {
 }
 
 .data-table th {
-    background-color: var(--secondary);
+    background-color: var(--primary);
     font-weight: 600;
-    color: var(--text-muted);
+    color: #ffffff;
     font-size: 0.85rem;
     text-transform: uppercase;
 }
@@ -312,3 +312,31 @@ body {
     padding: 0;
     background: none;
 }
+
+/* Switch Toggle Dashboard */
+.switch-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 50px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.switch-option {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.switch-option.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+

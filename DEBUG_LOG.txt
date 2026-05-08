@@ -1,0 +1,6 @@
+[08/05/2026, 01:55:00] Venda Iniciada - Tenant: 2 - Itens: [{"id":9,"name":"Creeper","price":69.9,"quantity":2}]
+[08/05/2026, 01:55:01] Venda Finalizada com Sucesso! ID: 54
+
+[08/05/2026, 01:55:28] Venda Iniciada - Tenant: 2 - Itens: [{"id":9,"name":"Creeper","price":69.9,"quantity":4}]
+[08/05/2026, 01:55:28] Venda Finalizada com Sucesso! ID: 55
+

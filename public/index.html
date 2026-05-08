@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,65 +9,238 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
+
 <body>
 
     <!-- Sidebar / Sandwich Menu -->
     <aside id="sidebar" class="sidebar">
         <div class="sidebar-header">
             <button id="toggleSidebarBtn" class="icon-btn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
             </button>
             <h2 class="logo-text">ERP<span>Pro</span></h2>
         </div>
-        
+
         <nav class="sidebar-nav">
             <a href="#" class="nav-link active" data-target="dashboard">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
                 <span>Dashboard</span>
             </a>
             <a href="#" class="nav-link" data-target="estoque">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                    </path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
                 <span>Estoque</span>
             </a>
             <a href="#" class="nav-link" data-target="caixa">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
                 <span>Caixa</span>
             </a>
+            <a href="#" class="nav-link" data-target="fechamento">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span>Fechamento de Caixa</span>
+            </a>
             <a href="#" class="nav-link" data-target="configuracao">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
                 <span>Configuração</span>
             </a>
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                <a href="#" class="nav-link admin-only" data-target="lojistas" style="display: none;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Lojistas</span>
+                </a>
+                <a href="#" onclick="logout()" class="nav-link" style="color: #ef4444;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Sair do Sistema</span>
+                </a>
+            </div>
         </nav>
 
-        <div class="sidebar-footer">
-            <span class="created-by">Created by</span>
-            <img src="img/logo-vwebtech.png" alt="VWebTech Logo" class="footer-logo">
+        <div class="sidebar-footer" style="padding: 1rem; border-top: 1px solid #f3f4f6; text-align: center;">
+            <a href="https://vwebtech.com.br" target="_blank"
+                style="text-decoration: none; display: block; opacity: 0.6; transition: all 0.3s ease;"
+                onmouseover="this.style.opacity='1'; this.querySelector('img').style.transform='scale(1.2)'"
+                onmouseout="this.style.opacity='0.6'; this.querySelector('img').style.transform='scale(1)'">
+                <span class="created-by"
+                    style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 0.3rem;">Created by</span>
+                <img src="img/logo-vwebtech.png" alt="VWebTech Logo" class="footer-logo"
+                    style="width: 80px; transition: transform 0.3s ease;">
+            </a>
         </div>
     </aside>
 
     <!-- Main Content Area -->
     <main class="main-content">
         <!-- Top Bar -->
-        <header class="topbar">
+        <header class="topbar"
+            style="display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;">
+            <div class="store-branding" style="display: flex; align-items: center; gap: 1rem;">
+                <img id="topbarLogo" src="" alt=""
+                    style="height: 50px; width: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); display: none;">
+                <span id="topbarStoreName" style="font-weight: 600; font-size: 1.1rem; color: var(--text-main);">ERP
+                    Pro</span>
+            </div>
             <div class="user-info">
-                <span class="user-name">Minha Loja</span>
-                <div class="user-avatar">ML</div>
+                <span class="user-name">Carregando...</span>
+                <div class="user-avatar">?</div>
             </div>
         </header>
 
         <!-- Dynamic Sections -->
         <div id="dashboard" class="content-section active">
-            <h1>Visão Geral</h1>
-            <div class="cards-grid">
-                <div class="stat-card">
-                    <h3>Vendas Hoje</h3>
-                    <div class="value">R$ 0,00</div>
+            <div class="section-header-flex"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h1>Visão Geral</h1>
+                <div class="dashboard-filters" style="display: flex; gap: 1rem; align-items: flex-end;">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <label for="dashStartDate" style="font-size: 0.8rem; font-weight: 500; color: #6b7280;">Data
+                            Inicial</label>
+                        <input type="date" id="dashStartDate" class="form-control"
+                            style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <label for="dashEndDate" style="font-size: 0.8rem; font-weight: 500; color: #6b7280;">Data
+                            Final</label>
+                        <input type="date" id="dashEndDate" class="form-control"
+                            style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    </div>
+                    <button id="dashFilterBtn" class="btn btn-primary" style="height: 38px;">Filtrar</button>
                 </div>
-                <div class="stat-card">
-                    <h3>Produtos Cadastrados</h3>
-                    <div class="value" id="dashTotalProducts">0</div>
+            </div>
+
+            <div class="cards-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div class="stat-card"
+                    style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <h3 style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Vendas Realizadas</h3>
+                    <div class="value" id="dashTotalSales"
+                        style="font-size: 1.5rem; font-weight: bold; color: #1f2937;">0</div>
                 </div>
+                <div class="stat-card"
+                    style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <h3 style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Receita Total</h3>
+                    <div class="value" id="dashTotalRevenue"
+                        style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">R$ 0,00</div>
+                </div>
+                <div class="stat-card"
+                    style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <h3 style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Custo Total</h3>
+                    <div class="value" id="dashTotalCost" style="font-size: 1.5rem; font-weight: bold; color: #ef4444;">
+                        R$ 0,00</div>
+                </div>
+                <div class="stat-card"
+                    style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <h3 style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Lucro</h3>
+                    <div class="value" id="dashTotalProfit"
+                        style="font-size: 1.5rem; font-weight: bold; color: #10b981;">R$ 0,00</div>
+                </div>
+            </div>
+
+            <!-- Seção de Gráficos (Analytics) -->
+            <div class="charts-container" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem; margin-bottom: 2rem;">
+                <!-- Gráfico de Vendas -->
+                <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <h3 style="color: #111827; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            Desempenho de Vendas
+                        </h3>
+                        
+                        <!-- Controles de Detalhamento -->
+                        <div style="display: flex; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 2px 6px;">
+                            <button id="granularityDown" class="icon-btn" title="Aumentar detalhe" style="padding: 4px; color: #6b7280;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <span id="currentGranularity" style="font-size: 0.75rem; font-weight: 600; color: var(--primary); min-width: 70px; text-align: center; text-transform: uppercase;">Diário</span>
+                            <button id="granularityUp" class="icon-btn" title="Diminuir detalhe" style="padding: 4px; color: #6b7280;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="salesChart" style="display: block; width: 100%; height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Categorias -->
+                <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 id="categoryChartTitle" style="color: #111827; font-size: 1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                            Categorias
+                        </h3>
+                        <div class="switch-container" id="categoryProductSwitch">
+                            <div class="switch-option active" data-view="category">Categorias</div>
+                            <div class="switch-option" data-view="product">Produtos</div>
+                        </div>
+                    </div>
+
+                    <div style="position: relative; height: 300px; width: 100%; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="categoriesChart" style="display: block; width: 100%; height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin-bottom: 1rem; font-size: 1.2rem;">Histórico de Vendas</h2>
+            <div class="table-container"
+                style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow-x: auto;">
+                <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #e5e7eb; text-align: left;">
+                            <th style="padding: 1rem;">Data/Hora</th>
+                            <th style="padding: 1rem;">Pagamento</th>
+                            <th style="padding: 1rem;">Custo</th>
+                            <th style="padding: 1rem;">Receita</th>
+                            <th style="padding: 1rem;">Lucro</th>
+                            <th style="padding: 1rem; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesHistoryBody">
+                        <!-- JS Render -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -75,11 +249,12 @@
                 <h1>Gerenciar Estoque</h1>
                 <button class="btn btn-primary" id="newProductBtn">Novo Produto</button>
             </div>
-            
+
             <div class="table-container">
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th>Imagem</th>
                             <th>Produto</th>
                             <th>Categoria</th>
                             <th>Estoque</th>
@@ -99,89 +274,449 @@
             <div class="pos-container" style="display: flex; gap: 2rem; margin-top: 1.5rem;">
                 <!-- Esquerda: Lista de Produtos -->
                 <div class="pos-products" style="flex: 2;">
-                    <input type="text" id="posSearch" placeholder="Buscar produto por nome..." class="form-control" style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid #d1d5db; border-radius: 8px;">
-                    <div id="posProductList" class="pos-product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="text" id="posSearch" placeholder="Buscar produto por nome..." class="form-control"
+                            style="flex: 2; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+                        <select id="posStockFilter" class="form-control"
+                            style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+                            <option value="todos">Todos os Produtos</option>
+                            <option value="com_estoque">Com Estoque</option>
+                            <option value="sem_estoque">Sem Estoque</option>
+                        </select>
+                    </div>
+                    <div id="posProductList" class="pos-product-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
                         <!-- Produtos renderizados aqui via JS -->
                     </div>
                 </div>
 
                 <!-- Direita: Carrinho -->
-                <div class="pos-cart" style="flex: 1; background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div class="pos-cart"
+                    style="flex: 1; background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                     <h3>Resumo da Venda</h3>
-                    <div id="posCartItems" style="margin-top: 1rem; min-height: 200px; max-height: 300px; overflow-y: auto;">
+                    <div id="posCartItems"
+                        style="margin-top: 1rem; min-height: 200px; max-height: 300px; overflow-y: auto;">
                         <p style="color: #6b7280; font-size: 0.9rem;">Nenhum item adicionado.</p>
                     </div>
-                    <div class="pos-total" style="margin-top: 1.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
-                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">
+                    <div class="pos-total"
+                        style="margin-top: 1.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">
                             <span>Total:</span>
                             <span id="posTotalValue">R$ 0,00</span>
                         </div>
-                        <button id="posCheckoutBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;" disabled>Finalizar Venda</button>
+                        <button id="posCheckoutBtn" class="btn btn-primary"
+                            style="width: 100%; padding: 1rem; font-size: 1.1rem;" disabled>Finalizar Venda</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="configuracao" class="content-section">
-            <h1>Configurações do Sistema</h1>
-            
-            <div class="config-card">
-                <h3>Personalização de Cores do ERP</h3>
-                <p>Altere as cores abaixo para personalizar este painel com a identidade da sua marca.</p>
-                
-                <div class="color-pickers-group">
-                    <div class="color-picker-item">
-                        <label for="colorPrimary">Cor Primária (Destaques)</label>
-                        <input type="color" id="colorPrimary" value="#2563eb">
+            <h1 style="margin-bottom: 2rem;">Configurações da Loja</h1>
+
+            <div class="cards-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+                <!-- Card Perfil da Loja -->
+                <div class="stat-card"
+                    style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h3
+                        style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; color: #111827; font-size: 1.1rem;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Perfil da Empresa
+                    </h3>
+                    <form id="profileForm">
+                        <div class="form-group" style="margin-bottom: 1.2rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; font-size: 0.9rem;">Nome
+                                Comercial da Loja</label>
+                            <input type="text" id="storeNameInput" name="name" placeholder="Ex: Boutique da Maria"
+                                required
+                                style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; font-size: 0.9rem;">Logo
+                                ou Logotipo</label>
+                            <div
+                                style="display: flex; align-items: center; gap: 1.5rem; background: #f9fafb; padding: 1.5rem; border-radius: 12px; border: 1px dashed #d1d5db;">
+                                <div style="position: relative; width: 80px; height: 80px;">
+                                    <img id="logoPreview" src="" alt=""
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); display: none;">
+                                    <div id="logoPlaceholder"
+                                        style="width: 100%; height: 100%; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #9ca3af; border: 2px dashed #d1d5db;">
+                                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" id="logoUpload" name="logo" accept="image/*"
+                                        style="font-size: 0.8rem; width: 100%;">
+                                    <p style="font-size: 0.7rem; color: #6b7280; margin-top: 0.4rem;">Recomendado:
+                                        Imagem Quadrada (1:1)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="saveProfileBtn"
+                            style="width: 100%; padding: 0.8rem; font-weight: 600;">Atualizar Perfil</button>
+                    </form>
+                </div>
+
+                <!-- Card Identidade Visual -->
+                <div class="stat-card"
+                    style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h3
+                        style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; color: #111827; font-size: 1.1rem;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        Identidade Visual
+                    </h3>
+                    <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 1.5rem;">Personalize as cores do painel
+                        para combinar com sua marca.</p>
+
+                    <div class="color-pickers-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="color-picker-item"
+                            style="display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 0.75rem; border-radius: 8px;">
+                            <label style="font-size: 0.9rem; font-weight: 500;">Cor Primária</label>
+                            <input type="color" id="colorPrimary" value="#2563eb"
+                                style="border: none; width: 40px; height: 40px; cursor: pointer; background: none;">
+                        </div>
+                        <div class="color-picker-item"
+                            style="display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 0.75rem; border-radius: 8px;">
+                            <label style="font-size: 0.9rem; font-weight: 500;">Cor Secundária</label>
+                            <input type="color" id="colorSecondary" value="#f3f4f6"
+                                style="border: none; width: 40px; height: 40px; cursor: pointer; background: none;">
+                        </div>
+                        <div class="color-picker-item"
+                            style="display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 0.75rem; border-radius: 8px;">
+                            <label style="font-size: 0.9rem; font-weight: 500;">Cor Terciária</label>
+                            <input type="color" id="colorTertiary" value="#ffffff"
+                                style="border: none; width: 40px; height: 40px; cursor: pointer; background: none;">
+                        </div>
                     </div>
+
+                    <button class="btn btn-primary mt-4" id="saveColorsBtn"
+                        style="width: 100%; padding: 0.8rem; font-weight: 600; margin-top: 2.2rem;">Salvar
+                        Cores</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="fechamento" class="content-section">
+            <div class="section-header-flex">
+                <h1>Gestão de Caixa</h1>
+                <div id="cashStatusBadge" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem;">Verificando...</div>
+            </div>
+
+            <!-- Visão: Caixa Fechado -->
+            <div id="cashClosedView" style="display: none; background: white; padding: 3rem; border-radius: 12px; border: 1px solid #e5e7eb; text-align: center; margin-top: 2rem;">
+                <div style="color: #6b7280; margin-bottom: 1.5rem;">
+                    <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <h2>O Caixa está Fechado</h2>
+                <p style="color: #6b7280; margin-bottom: 2rem;">Abra o caixa para começar a registrar vendas no PDV.</p>
+                <div style="max-width: 350px; margin: 0 auto; text-align: center;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Valor Inicial em Dinheiro (Troco)</label>
                     
-                    <div class="color-picker-item">
-                        <label for="colorSecondary">Cor Secundária (Fundo Principal)</label>
-                        <input type="color" id="colorSecondary" value="#f3f4f6">
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                        <div style="text-align: right;">
+                            <span style="color: #9ca3af; font-weight: 700; font-size: 1.2rem;">R$</span>
+                        </div>
+                        <input type="text" id="openingBalanceInput" value="0,00" class="form-control" style="width: 180px; padding: 0.85rem; border-radius: 10px; font-size: 1.2rem; text-align: center; border: 2px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: 700;">
+                        <div></div> <!-- Espaço vazio para manter o input no centro absoluto -->
                     </div>
-                    
-                    <div class="color-picker-item">
-                        <label for="colorTertiary">Cor Terciária (Elementos e Painéis)</label>
-                        <input type="color" id="colorTertiary" value="#ffffff">
+
+                    <button id="openCashBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem; font-weight: 600; border-radius: 10px;">Abrir Caixa Agora</button>
+                </div>
+            </div>
+
+            <!-- Visão: Caixa Aberto -->
+            <div id="cashOpenView" style="display: none; margin-top: 2rem;">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                    <!-- Resumo Atual -->
+                    <div style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb;">
+                        <h3>Resumo da Sessão Atual</h3>
+                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 2rem;">Acompanhe o saldo esperado na gaveta.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                                <span style="font-size: 0.8rem; color: #6b7280;">Saldo Inicial</span>
+                                <div id="currentOpeningBalance" style="font-size: 1.25rem; font-weight: 700; color: #1f2937;">R$ 0,00</div>
+                            </div>
+                            <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                                <span style="font-size: 0.8rem; color: #6b7280;">Vendas em Dinheiro</span>
+                                <div id="currentCashSales" style="font-size: 1.25rem; font-weight: 700; color: #10b981;">R$ 0,00</div>
+                            </div>
+                            <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px;">
+                                <span style="font-size: 0.8rem; color: #6b7280;">Sangrias/Aportes</span>
+                                <div id="currentTransactionsBalance" style="font-size: 1.25rem; font-weight: 700; color: #f59e0b;">R$ 0,00</div>
+                            </div>
+                            <div style="background: #eff6ff; padding: 1.5rem; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                <span style="font-size: 0.8rem; color: #2563eb; font-weight: 600;">Saldo Esperado em Caixa</span>
+                                <div id="currentExpectedBalance" style="font-size: 1.25rem; font-weight: 700; color: #1e40af;">R$ 0,00</div>
+                            </div>
+                        </div>
+
+                        <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #e5e7eb;">
+
+                        <h4>Finalizar Dia / Turno</h4>
+                        <div style="margin-top: 1rem; background: #fffbeb; border: 1px solid #fef3c7; padding: 1.5rem; border-radius: 8px;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Valor Real Contado na Gaveta</label>
+                            <div style="display: flex; gap: 1rem;">
+                                <input type="text" id="actualBalanceInput" value="0,00" class="form-control" style="flex: 1; padding: 0.8rem;">
+                                <button id="closeCashBtn" class="btn btn-primary" style="background: #1f2937;">Fechar Caixa</button>
+                            </div>
+                            <p style="font-size: 0.75rem; color: #92400e; margin-top: 0.5rem;">O sistema comparará o saldo real com o esperado para identificar quebras.</p>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                                Atividades da Sessão
+                            </h3>
+                            <div class="table-container" style="background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb; max-height: 350px; overflow-y: auto;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid #e5e7eb; text-align: left; background: #f3f4f6;">
+                                            <th style="padding: 0.75rem;">Hora</th>
+                                            <th style="padding: 0.75rem;">Tipo</th>
+                                            <th style="padding: 0.75rem;">Descrição</th>
+                                            <th style="padding: 0.75rem; text-align: right;">Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="currentSessionActivities">
+                                        <!-- JS Render -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lançamentos Avulsos -->
+                    <div style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid #e5e7eb;">
+                        <h3>Movimentações</h3>
+                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1.5rem;">Sangrias e Aportes</p>
+                        
+                        <form id="cashTransactionForm">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Tipo</label>
+                                <select id="transType" class="form-control" style="padding: 0.6rem;">
+                                    <option value="out">Sangria (Retirada)</option>
+                                    <option value="in">Aporte (Entrada)</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Valor</label>
+                                <input type="text" id="transAmount" value="0,00" required class="form-control" style="padding: 0.6rem;">
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Motivo</label>
+                                <input type="text" id="transReason" placeholder="Ex: Pagamento Motoboy" required class="form-control" style="padding: 0.6rem;">
+                            </div>
+                            <button type="submit" class="btn btn-secondary" style="width: 100%; border: 1px solid #d1d5db;">Lançar Movimentação</button>
+                        </form>
                     </div>
                 </div>
-                
-                <button class="btn btn-primary mt-4" id="saveColorsBtn">Salvar Identidade Visual</button>
+            </div>
+        </div>
+
+        <div id="lojistas" class="content-section">
+            <div class="section-header-flex"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h1>Gestão de Lojistas</h1>
+                <button class="btn btn-primary" id="newLojistaBtn">+ Novo Lojista</button>
+            </div>
+
+            <div class="data-table-container"
+                style="background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                        <tr>
+                            <th style="padding: 1rem; font-weight: 600;">Nome / Loja</th>
+                            <th style="padding: 1rem; font-weight: 600;">E-mail / Login</th>
+                            <th style="padding: 1rem; font-weight: 600;">Status</th>
+                            <th style="padding: 1rem; font-weight: 600;">Nível</th>
+                            <th style="padding: 1rem; font-weight: 600;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lojistasTableBody">
+                        <!-- Lojistas renderizados via JS -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
 
-    <!-- Modal Novo Produto -->
-    <div id="productModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
-        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px;">
-            <h2 style="margin-bottom: 1.5rem;">Novo Produto</h2>
-            <form id="productForm">
+    <!-- Modal Novo Lojista -->
+    <div id="lojistaModal" class="modal-overlay"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div class="modal-content"
+            style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px;">
+            <h2 id="lojistaModalTitle" style="margin-bottom: 1.5rem;">Novo Lojista</h2>
+            <form id="lojistaForm">
+                <input type="hidden" name="id" id="lojistaId">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título do Produto</label>
-                    <input type="text" name="title" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nome Completo</label>
+                    <input type="text" name="name" required
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
-                    <textarea name="description" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;"></textarea>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">E-mail (Login)</label>
+                    <input type="email" name="email" required
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                </div>
+                <div id="passField" class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Senha</label>
+                    <input type="password" name="password"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nome da Loja (Novo
+                        Tenant)</label>
+                    <input type="text" name="tenant_name" placeholder="Ex: Boutique da Maria"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
                 </div>
                 <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                     <div class="form-group" style="flex: 1;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Preço (R$)</label>
-                        <input type="number" step="0.01" name="price" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nível</label>
+                        <select name="role"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                            <option value="user">Lojista (Usuário)</option>
+                            <option value="admin">Administrador</option>
+                        </select>
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Quantidade em Estoque</label>
-                        <input type="number" name="availableQuantity" value="1" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Status</label>
+                        <select name="active"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Motivo da Inatividade (se
+                        houver)</label>
+                    <textarea name="inactive_reason" rows="2" placeholder="Ex: Falta de pagamento da mensalidade"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" id="closeLojistaModal"
+                        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveLojistaBtn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </main>
+
+    <!-- Modal Novo Produto -->
+    <div id="productModal" class="modal-overlay"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div class="modal-content"
+            style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px;">
+            <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Novo Produto</h2>
+            <form id="productForm">
+                <input type="hidden" name="id" id="productId">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group" style="flex: 2;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Título do
+                            Produto</label>
+                        <input type="text" name="title" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Status</label>
+                        <select name="active"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Descrição</label>
+                    <textarea name="description" rows="3"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-end;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; text-align: center;">Preço de Venda</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <span style="position: absolute; left: 0.75rem; color: #6b7280; font-weight: 500;">R$</span>
+                            <input type="text" id="productPrice" name="price" value="0,00" required
+                                style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.2rem; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; box-sizing: border-box;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; text-align: center;">Custo</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <span style="position: absolute; left: 0.75rem; color: #6b7280; font-weight: 500;">R$</span>
+                            <input type="text" id="productCost" name="cost_price" value="0,00" required
+                                style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2.2rem; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; box-sizing: border-box;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; text-align: center;">Qtd.
+                            em Estoque</label>
+                        <input type="number" name="availableQuantity" value="1" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; box-sizing: border-box; height: 38px;">
                     </div>
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Categoria</label>
-                    <select name="category" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <select name="category"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                        <option value="Acessórios">Acessórios</option>
+                        <option value="Acessórios Premium">Acessórios Premium</option>
+                        <option value="Bebês">Bebês</option>
+                        <option value="Bijuterias">Bijuterias</option>
+                        <option value="Blazers">Blazers</option>
+                        <option value="Brinquedos">Brinquedos</option>
+                        <option value="Calçados">Calçados</option>
+                        <option value="Camisas Sociais">Camisas Sociais</option>
+                        <option value="Casa">Casa</option>
+                        <option value="Eletrônicos">Eletrônicos</option>
+                        <option value="Equipamentos">Equipamentos</option>
+                        <option value="Gravatas">Gravatas</option>
+                        <option value="Kits Presente">Kits Presente</option>
+                        <option value="Maquiagens">Maquiagens</option>
                         <option value="Meninas">Meninas</option>
                         <option value="Meninos">Meninos</option>
-                        <option value="Bebês">Bebês</option>
-                        <option value="Calçados">Calçados</option>
-                        <option value="Acessórios">Acessórios</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Promoções">Promoções</option>
+                        <option value="Roupas">Roupas</option>
+                        <option value="Sapatos">Sapatos</option>
+                        <option value="Suplementos">Suplementos</option>
+                        <option value="Ternos">Ternos</option>
+                        <option value="Ursinhos">Ursinhos</option>
+                        <option value="Geral">Geral</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Vitrine (Exibição)</label>
+                    <select name="theme"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                        <option value="">Nenhuma (Oculto)</option>
+                        <option value="executive">Executive (Moda Social)</option>
+                        <option value="kids">Kids World (Infantil)</option>
+                        <option value="fit">Fit Zone (Esportes)</option>
+                        <option value="market">Market Hub (Geral/Eletrônicos)</option>
+                        <option value="gifts">Gifts & Co (Presentes)</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -189,13 +724,268 @@
                     <input type="file" name="image" accept="image/*" style="width: 100%;">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button type="button" id="closeProductModal" style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                    <button type="button" id="closeProductModal"
+                        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer;">Cancelar</button>
                     <button type="submit" class="btn btn-primary" id="saveProductBtn">Salvar</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal Finalizar Venda -->
+    <div id="checkoutModal" class="modal-overlay"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div class="modal-content"
+            style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px;">
+            <h2 style="margin-bottom: 1.5rem;">Finalizar Venda</h2>
+            <form id="checkoutForm">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Forma de Pagamento</label>
+                    <select id="paymentMethod" name="paymentMethod" class="form-control"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="pix">PIX</option>
+                        <option value="debito">Cartão de Débito</option>
+                        <option value="credito">Cartão de Crédito</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="installmentsGroup" style="margin-bottom: 1rem; display: none;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Parcelamento</label>
+                    <select id="installments" name="installments" class="form-control"
+                        style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                        <option value="1">1x (À vista)</option>
+                        <option value="2">2x</option>
+                        <option value="3">3x</option>
+                        <option value="4">4x</option>
+                        <option value="5">5x</option>
+                        <option value="6">6x</option>
+                        <option value="7">7x</option>
+                        <option value="8">8x</option>
+                        <option value="9">9x</option>
+                        <option value="10">10x</option>
+                        <option value="11">11x</option>
+                        <option value="12">12x</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Acréscimo (R$)</label>
+                        <input type="text" id="feeAmount" value="0,00" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Desconto (R$)</label>
+                        <input type="text" id="discountAmount" value="0,00" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Subtotal:</span>
+                        <span id="checkoutSubtotal">R$ 0,00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #ef4444;">
+                        <span>Desconto:</span>
+                        <span id="checkoutDiscountInfo">- R$ 0,00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #10b981;">
+                        <span>Acréscimo:</span>
+                        <span id="checkoutFeeInfo">+ R$ 0,00</span>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #d1d5db;">
+                        <span>Total Final:</span>
+                        <span id="checkoutTotalValue">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" id="closeCheckoutModal"
+                        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="confirmCheckoutBtn">Confirmar Venda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toastContainer"
+        style="position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px;">
+    </div>
+
+    <!-- Modal de Detalhes da Venda -->
+    <div id="saleDetailModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 90%; max-width: 500px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <div style="padding: 1.5rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: #111827;">Detalhes da Venda</h3>
+                <button onclick="document.getElementById('saleDetailModal').style.display = 'none'" class="icon-btn" style="color: #6b7280;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div id="saleDetailContent" style="padding: 1.5rem; max-height: 70vh; overflow-y: auto;">
+                <!-- Conteúdo preenchido via JS -->
+            </div>
+            <div style="padding: 1rem 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: right;">
+                <button onclick="document.getElementById('saleDetailModal').style.display = 'none'" style="padding: 0.5rem 1rem; background: white; border: 1px solid #d1d5db; border-radius: 6px; font-weight: 500; cursor: pointer;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Cancelamento -->
+    <div id="cancelSaleModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <div style="padding: 1.5rem; background: #fff1f2; border-bottom: 1px solid #fecaca; display: flex; align-items: center; gap: 0.75rem;">
+                <div style="background: #ef4444; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+                <h3 style="margin: 0; font-size: 1.1rem; color: #991b1b;">Cancelar Venda</h3>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p style="margin-top: 0; margin-bottom: 1.5rem; color: #4b5563; font-size: 0.95rem;">Esta ação irá estornar os produtos ao estoque. Por favor, justifique o cancelamento:</p>
+                
+                <input type="hidden" id="cancelTargetId">
+                
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.85rem; color: #374151;">Motivo do Cancelamento *</label>
+                    <textarea id="cancelReasonInput" placeholder="Ex: Erro no método de pagamento, devolução..." style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; resize: none; min-height: 80px;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.85rem; color: #374151;">Responsável</label>
+                    <input type="text" id="cancelResponsibleInput" placeholder="Seu nome" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem;">
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button onclick="document.getElementById('cancelSaleModal').style.display = 'none'" style="padding: 0.5rem 1rem; background: white; border: 1px solid #d1d5db; border-radius: 6px; font-weight: 500; cursor: pointer; color: #374151;">Voltar</button>
+                    <button id="confirmCancelBtn" style="padding: 0.5rem 1.25rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Confirmar Cancelamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="deleteConfirmModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; position: relative;">
+            <div style="color: #ef4444; margin-bottom: 1rem;">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <h2 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Excluir Produto?</h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem; font-size: 0.95rem;">Tem certeza que deseja excluir <strong id="deleteProductName"></strong>? <br> <span style="color: #ef4444; font-weight: 600;">Esta ação é irreversível!</span></p>
+            
+            <div style="background: #fef2f2; border: 1px dashed #fecaca; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <p style="font-size: 0.8rem; color: #991b1b; margin-bottom: 0.5rem; font-weight: 600;">DIGITE O CÓDIGO PARA CONFIRMAR:</p>
+                <div id="deleteSecurityCode" style="font-family: monospace; font-size: 1.5rem; font-weight: 700; letter-spacing: 5px; color: #111827; margin-bottom: 1rem;">12345</div>
+                <input type="text" id="deleteCodeInput" maxlength="5" autocomplete="off" placeholder="Digite os 5 dígitos" style="width: 100%; padding: 0.8rem; text-align: center; font-size: 1.1rem; border: 2px solid #e5e7eb; border-radius: 8px; font-family: monospace;">
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="closeModal('deleteConfirmModal')" class="btn btn-secondary" style="flex: 1; padding: 0.8rem; background: #f3f4f6; border: 1px solid #d1d5db; color: #374151;">Cancelar</button>
+                <button id="confirmDeleteBtn" class="btn btn-primary" style="flex: 1; padding: 0.8rem; background: #ef4444;">Excluir Agora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Resumo de Fechamento (Sucesso) -->
+    <div id="cashSummaryModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2100; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2.5rem; border-radius: 16px; width: 450px; max-width: 95%; text-align: center; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+            <div id="summaryIcon" style="margin-bottom: 1.5rem;">
+                <!-- Ícone dinâmico via JS -->
+            </div>
+            <h2 style="margin-bottom: 0.5rem; font-size: 1.5rem; color: #111827;">Caixa Encerrado!</h2>
+            <p style="color: #6b7280; margin-bottom: 2rem;">Confira o balanço final do turno.</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 12px; border: 1px solid #e5e7eb;">
+                    <span style="font-size: 0.75rem; color: #6b7280; display: block; margin-bottom: 0.25rem;">VALOR ESPERADO</span>
+                    <span id="summaryExpected" style="font-size: 1.1rem; font-weight: 700; color: #374151;">R$ 0,00</span>
+                </div>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 12px; border: 1px solid #e5e7eb;">
+                    <span style="font-size: 0.75rem; color: #6b7280; display: block; margin-bottom: 0.25rem;">VALOR REAL</span>
+                    <span id="summaryActual" style="font-size: 1.1rem; font-weight: 700; color: #374151;">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div id="summaryDiffCard" style="padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                <span id="summaryDiffLabel" style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">RESULTADO</span>
+                <span id="summaryDiffValue" style="font-size: 1.5rem; font-weight: 800;">R$ 0,00</span>
+                <p id="summaryDiffText" style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.9;"></p>
+            </div>
+
+            <button onclick="document.getElementById('cashSummaryModal').style.display = 'none'" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem; background: #111827;">Concluído</button>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Fechamento de Caixa -->
+    <div id="cashCloseConfirmModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; width: 400px; max-width: 90%; text-align: center; position: relative;">
+            <div style="color: #1f2937; margin-bottom: 1rem;">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h2 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Finalizar Caixa?</h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem; font-size: 0.95rem;">Deseja realmente encerrar a sessão de hoje? <br> <span style="color: #1f2937; font-weight: 600;">O turno será bloqueado para novas vendas.</span></p>
+            
+            <div style="background: #f9fafb; border: 1px dashed #d1d5db; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <p style="font-size: 0.8rem; color: #374151; margin-bottom: 0.5rem; font-weight: 600;">DIGITE O CÓDIGO PARA CONFIRMAR:</p>
+                <div id="cashCloseSecurityCode" style="font-family: monospace; font-size: 1.5rem; font-weight: 700; letter-spacing: 5px; color: #111827; margin-bottom: 1rem;">-----</div>
+                <input type="text" id="cashCloseCodeInput" maxlength="5" autocomplete="off" placeholder="Digite os 5 dígitos" style="width: 100%; padding: 0.8rem; text-align: center; font-size: 1.1rem; border: 2px solid #e5e7eb; border-radius: 8px; font-family: monospace;">
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="closeModal('cashCloseConfirmModal')" class="btn btn-secondary" style="flex: 1; padding: 0.8rem; background: #f3f4f6; border: 1px solid #d1d5db; color: #374151;">Voltar</button>
+                <button id="confirmCashCloseBtn" class="btn btn-primary" style="flex: 1; padding: 0.8rem; background: #1f2937;">Encerrar Turno</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Alimentar Estoque -->
+    <div id="replenishModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; width: 400px; max-width: 90%; position: relative;">
+            <button onclick="closeModal('replenishModal')" style="position: absolute; top: 1rem; right: 1rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Alimentar Estoque</h2>
+            <p id="replenishProductName" style="margin-bottom: 1rem; color: #6b7280; font-weight: 500;"></p>
+            <form id="replenishForm">
+                <input type="hidden" id="replenishProductId">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">Quantidade a Adicionar</label>
+                    <input type="number" id="replenishQuantity" placeholder="Ex: 50" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">Motivo / Referência</label>
+                    <input type="text" id="replenishReason" placeholder="Ex: NF-1234, Compra com fornecedor..." style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Confirmar Entrada</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Histórico de Estoque -->
+    <div id="stockHistoryModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; width: 600px; max-width: 95%; position: relative; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+            <button onclick="closeModal('stockHistoryModal')" style="position: absolute; top: 1rem; right: 1rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Extrato de Movimentação</h2>
+            <p id="historyProductName" style="margin-bottom: 1.5rem; color: #6b7280; font-weight: 500;"></p>
+            
+            <div style="flex: 1; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead style="position: sticky; top: 0;">
+                        <tr>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb;">Data</th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb;">Motivo</th>
+                            <th style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;">Mov.</th>
+                            <th style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockHistoryTableBody">
+                        <!-- Rendered via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script src="js/admin.js"></script>
 </body>
+
 </html>
