@@ -8,6 +8,9 @@ const path = require('path');
 const fs = require('fs');
 const { initDB, pool } = require('./src/database/db');
 const { verifyToken, JWT_SECRET } = require('./src/middleware/auth');
+const productRoutes = require('./src/routes/productRoutes');
+const customerRoutes = require('./src/routes/customerRoutes');
+const sellerRoutes = require('./src/routes/sellerRoutes');
 
 // Middleware para verificar se o usuário é Administrador
 const isAdmin = (req, res, next) => {
@@ -143,175 +146,32 @@ app.post('/api/auth/login', async (req, res) => {
 // ROTAS PRIVADAS DO ERP (Protegidas)
 // ==========================================
 
-// Listar produtos do lojista no painel
-app.get('/api/products', verifyToken, async (req, res) => {
-    try {
-        const [rows] = await pool.query('SELECT * FROM products WHERE tenant_id = ? ORDER BY id DESC', [req.user.tenant_id]);
-        const products = rows.map(p => ({
-            ...p,
-            images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images
-        }));
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar produtos' });
-    }
-});
+// Importar Rotas Modulares
+const inventoryRoutes = require('./src/routes/inventoryRoutes');
 
-// Criar novo produto com upload de imagem
-app.post('/api/products', verifyToken, upload.single('image'), async (req, res) => {
-    try {
-        const { title, description, price, cost_price, category, theme, condition_state, availableQuantity, active } = req.body;
-        const tenant_id = req.user.tenant_id;
-        const isActive = active === 'false' || active === false ? false : true;
-        
-        let images = [];
-        if (req.file) {
-            // URL to access the image publicly
-            images.push(`http://localhost:4000/uploads/${req.file.filename}`);
-        }
-
-        const [result] = await pool.query(
-            `INSERT INTO products (tenant_id, title, description, price, cost_price, category, theme, condition_state, availableQuantity, active, images) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [tenant_id, title, description || '', price || 0, cost_price || 0, category || 'Geral', theme || '', condition_state || 'Novo', availableQuantity || 0, isActive, JSON.stringify(images)]
-        );
-
-        res.status(201).json({ id: result.insertId, message: 'Produto cadastrado com sucesso!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erro ao salvar produto' });
-    }
-});
-
-// Atualizar produto existente com ou sem nova imagem
-app.put('/api/products/:id', verifyToken, upload.single('image'), async (req, res) => {
-    try {
-        const { title, description, price, cost_price, category, theme, condition_state, availableQuantity, active } = req.body;
-        const tenant_id = req.user.tenant_id;
-        const productId = req.params.id;
-        const isActive = active === 'false' || active === false ? false : true;
-        
-        let updateQuery = `UPDATE products SET title = ?, description = ?, price = ?, cost_price = ?, category = ?, theme = ?, condition_state = ?, availableQuantity = ?, active = ?`;
-        let queryParams = [title, description || '', price || 0, cost_price || 0, category || 'Geral', theme || '', condition_state || 'Novo', availableQuantity || 0, isActive];
-
-        if (req.file) {
-            // URL to access the image publicly
-            const newImage = `http://localhost:4000/uploads/${req.file.filename}`;
-            updateQuery += `, images = ?`;
-            queryParams.push(JSON.stringify([newImage]));
-        }
-
-        updateQuery += ` WHERE id = ? AND tenant_id = ?`;
-        queryParams.push(productId, tenant_id);
-
-        await pool.query(updateQuery, queryParams);
-
-        res.json({ message: 'Produto atualizado com sucesso!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erro ao atualizar produto' });
-    }
-});
-
-// Excluir produto permanentemente
-app.delete('/api/products/:id', verifyToken, async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-        const productId = req.params.id;
-        const tenant_id = req.user.tenant_id;
-
-        // 1. Limpar histórico de inventário primeiro (Garantia extra)
-        await connection.query('DELETE FROM inventory_history WHERE product_id = ? AND tenant_id = ?', [productId, tenant_id]);
-
-        // 2. Excluir o produto
-        const [result] = await connection.query(
-            'DELETE FROM products WHERE id = ? AND tenant_id = ?',
-            [productId, tenant_id]
-        );
-
-        if (result.affectedRows === 0) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Produto não encontrado ou acesso negado' });
-        }
-
-        await connection.commit();
-        res.json({ message: 'Produto excluído com sucesso!' });
-    } catch (error) {
-        if (connection) await connection.rollback();
-        console.error('ERRO AO EXCLUIR PRODUTO:', error);
-        res.status(500).json({ error: 'Erro ao excluir produto: ' + error.message });
-    } finally {
-        connection.release();
-    }
-});
-
-// Alimentar/Repor estoque de produto existente
-app.post('/api/inventory/replenish', verifyToken, async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-        const productId = parseInt(req.body.productId);
-        const quantityToAdd = parseInt(req.body.quantityToAdd);
-        const reason = req.body.reason;
-        const tenant_id = req.user.tenant_id;
-
-        if (isNaN(productId) || isNaN(quantityToAdd)) {
-            throw new Error('ID do produto ou quantidade inválida');
-        }
-
-        // 1. Buscar quantidade atual (com trava de segurança do tenant)
-        const [rows] = await connection.query('SELECT availableQuantity FROM products WHERE id = ? AND tenant_id = ?', [productId, tenant_id]);
-        if (rows.length === 0) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Produto não encontrado ou acesso negado' });
-        }
-
-        const currentQty = parseInt(rows[0].availableQuantity) || 0;
-        const newQty = currentQty + quantityToAdd;
-
-        // 2. Atualizar estoque
-        await connection.query('UPDATE products SET availableQuantity = ? WHERE id = ? AND tenant_id = ?', [newQty, productId, tenant_id]);
-
-        // 3. Registrar no histórico
-        await connection.query(
-            'INSERT INTO inventory_history (tenant_id, product_id, quantity_change, new_quantity, reason) VALUES (?, ?, ?, ?, ?)',
-            [tenant_id, productId, quantityToAdd, newQty, reason || 'Reposição de Estoque']
-        );
-
-        await connection.commit();
-        res.json({ message: 'Estoque atualizado com sucesso!', newQuantity: newQty });
-    } catch (error) {
-        if (connection) await connection.rollback();
-        console.error('Erro ao alimentar estoque:', error);
-        res.status(500).json({ error: 'Erro ao atualizar o estoque' });
-    } finally {
-        connection.release();
-    }
-});
-
-// Buscar histórico de estoque de um produto
-app.get('/api/inventory/history/:productId', verifyToken, async (req, res) => {
-    try {
-        const productId = req.params.productId;
-        const tenant_id = req.user.tenant_id;
-
-        const [rows] = await pool.query(
-            'SELECT * FROM inventory_history WHERE product_id = ? AND tenant_id = ? ORDER BY created_at DESC',
-            [productId, tenant_id]
-        );
-        res.json(rows);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erro ao buscar histórico' });
-    }
-});
+app.use('/api/products', productRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // ==========================================
 // GESTÃO DE CAIXA (SESSÕES E MOVIMENTAÇÕES)
 // ==========================================
 
 // Buscar sessão de caixa aberta atual
+// Listar histórico de caixas fechados
+app.get('/api/cash/history', verifyToken, async (req, res) => {
+    try {
+        const tenant_id = req.user.tenant_id;
+        const [rows] = await pool.query(
+            'SELECT * FROM cash_sessions WHERE tenant_id = ? AND status = "closed" ORDER BY closed_at DESC',
+            [tenant_id]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao buscar histórico de caixas' });
+    }
+});
+
 app.get('/api/cash/current', verifyToken, async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -439,146 +299,11 @@ app.post('/api/cash/close', verifyToken, async (req, res) => {
     }
 });
 
-// Registrar venda manual (Frente de Caixa PDV)
-app.post('/api/sales', verifyToken, async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-        const { items, paymentMethod, installments, fee, discount, total } = req.body; 
-        const tenant_id = req.user.tenant_id;
+const saleRoutes = require('./src/routes/saleRoutes');
 
-        // 0. Verificar se existe caixa aberto para este tenant
-        const [cashSessionRows] = await connection.query('SELECT id FROM cash_sessions WHERE tenant_id = ? AND status = "open"', [tenant_id]);
-        if (cashSessionRows.length === 0) {
-            await connection.rollback();
-            return res.status(403).json({ error: 'O caixa precisa estar ABERTO para realizar vendas. Vá ao menu Fechamento de Caixa.' });
-        }
-        const currentSessionId = cashSessionRows[0].id;
-
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            await connection.rollback();
-            return res.status(400).json({ error: 'Carrinho vazio ou inválido.' });
-        }
-
-        let total_cost = 0;
-        const processedItems = [];
-
-        for (const item of items) {
-            const [productRows] = await connection.query('SELECT title, availableQuantity, cost_price FROM products WHERE id = ? AND tenant_id = ? FOR UPDATE', [item.id, tenant_id]);
-            if (productRows.length === 0) throw new Error(`Produto ID ${item.id} não encontrado.`);
-            
-            const product = productRows[0];
-            if (product.availableQuantity < item.quantity) {
-                throw new Error(`Estoque insuficiente para "${product.title}" (${product.availableQuantity} disponíveis).`);
-            }
-
-            total_cost += (Number(product.cost_price) * Number(item.quantity));
-            
-            // Montamos o item com dados frescos do banco para garantir integridade
-            processedItems.push({
-                id: item.id,
-                name: product.title,
-                price: Number(item.price),
-                quantity: Number(item.quantity)
-            });
-        }
-
-        const total_revenue = Number(total) || processedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-        const total_profit = total_revenue - total_cost;
-        const itemsToSave = JSON.stringify(processedItems);
-
-        // 1. Inserir venda básica para obter o ID (agora com session_id)
-        const [result] = await connection.query(
-            `INSERT INTO sales 
-            (tenant_id, session_id, total_revenue, total_cost, total_profit, payment_method, installments, fee, discount, sale_date, sale_time, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), CURTIME(), 'completed')`,
-            [
-                tenant_id, 
-                currentSessionId,
-                total_revenue, 
-                total_cost, 
-                total_profit, 
-                paymentMethod || 'dinheiro', 
-                Number(installments) || 1, 
-                Number(fee) || 0, 
-                Number(discount) || 0
-            ]
-        );
-
-        const newSaleId = result.insertId;
-
-        // 2. Atualizar estoque e gravar histórico para cada item
-        for (const item of processedItems) {
-            // Atualizar estoque
-            await connection.query('UPDATE products SET availableQuantity = availableQuantity - ? WHERE id = ?', [item.quantity, item.id]);
-            
-            // Gravar histórico de inventário
-            const [productCheck] = await connection.query('SELECT availableQuantity FROM products WHERE id = ?', [item.id]);
-            const newQty = productCheck[0].availableQuantity;
-            await connection.query(
-                'INSERT INTO inventory_history (tenant_id, product_id, quantity_change, new_quantity, reason) VALUES (?, ?, ?, ?, ?)',
-                [tenant_id, item.id, -item.quantity, newQty, `Venda PDV - ID #${newSaleId}`]
-            );
-        }
-
-        // 3. Atualizar os itens da venda (Garantia de integridade)
-        await connection.query('UPDATE sales SET items = ? WHERE id = ?', [itemsToSave, newSaleId]);
-
-        await connection.commit();
-        res.json({ message: 'Venda finalizada com sucesso!', saleId: newSaleId });
-    } catch (error) {
-        if (connection) await connection.rollback();
-        console.error('ERRO AO PROCESSAR VENDA:', error);
-        res.status(500).json({ 
-            error: error.message || 'Erro interno ao processar venda'
-        });
-    } finally {
-        connection.release();
-    }
-});
-
-// Cancelar/Estornar Venda
-app.post('/api/sales/:id/cancel', verifyToken, async (req, res) => {
-    const connection = await pool.getConnection();
-    try {
-        const { id } = req.params;
-        const { reason, responsible } = req.body;
-        const tenant_id = req.user.tenant_id;
-
-        if (!reason) throw new Error('O motivo do cancelamento é obrigatório');
-
-        await connection.beginTransaction();
-
-        // 1. Buscar a venda e seus itens
-        const [sales] = await connection.query('SELECT * FROM sales WHERE id = ? AND tenant_id = ?', [id, tenant_id]);
-        if (sales.length === 0) throw new Error('Venda não encontrada');
-        
-        const sale = sales[0];
-        if (sale.status === 'canceled') throw new Error('Esta venda já foi cancelada');
-
-        // 2. Estornar estoque se houver itens registrados
-        if (sale.items) {
-            const items = typeof sale.items === 'string' ? JSON.parse(sale.items) : sale.items;
-            for (const item of items) {
-                if (item.id) {
-                    await connection.query('UPDATE products SET availableQuantity = availableQuantity + ? WHERE id = ? AND tenant_id = ?', [item.quantity, item.id, tenant_id]);
-                }
-            }
-        }
-
-        // 3. Marcar como cancelada com detalhes e data/hora
-        await connection.query('UPDATE sales SET status = "canceled", cancel_reason = ?, cancel_responsible = ?, canceled_at = NOW() WHERE id = ?', [reason, responsible || 'Sistema', id]);
-
-        await connection.commit();
-        res.json({ message: 'Venda cancelada e estoque estornado com sucesso!' });
-    } catch (error) {
-        await connection.rollback();
-        console.error(error);
-        res.status(500).json({ error: error.message || 'Erro ao cancelar venda' });
-    } finally {
-        connection.release();
-    }
-});
+app.use('/api/products', productRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/sales', saleRoutes);
 
 // ==========================================
 // ROTAS DE DASHBOARD E RELATÓRIOS
@@ -775,22 +500,28 @@ app.get('/api/sales/history', verifyToken, async (req, res) => {
         const tenant_id = req.user.tenant_id;
         const { startDate, endDate, session_id } = req.query;
 
-        let query = 'SELECT * FROM sales WHERE tenant_id = ?';
+        let query = `
+            SELECT s.*, c.name as customer_name, sel.name as seller_name 
+            FROM sales s 
+            LEFT JOIN customers c ON s.customer_id = c.id 
+            LEFT JOIN sellers sel ON s.seller_id = sel.id 
+            WHERE s.tenant_id = ?
+        `;
         let queryParams = [tenant_id];
 
         // Se houver filtro de data, aplicamos
         if (startDate && endDate) {
-            query += ' AND created_at >= ? AND created_at <= ?';
+            query += ' AND s.created_at >= ? AND s.created_at <= ?';
             queryParams.push(`${startDate} 00:00:00`, `${endDate} 23:59:59`);
         }
 
         // Filtro por sessão de caixa
         if (session_id) {
-            query += ' AND session_id = ?';
+            query += ' AND s.session_id = ?';
             queryParams.push(session_id);
         }
 
-        query += ' ORDER BY created_at DESC';
+        query += ' ORDER BY s.created_at DESC';
 
         const [rows] = await pool.query(query, queryParams);
         res.json(rows);
@@ -914,6 +645,11 @@ app.post('/api/settings/profile', verifyToken, upload.single('logo'), async (req
         res.status(500).json({ error: 'Erro ao salvar configurações.' });
     }
 });
+
+// Routes registration
+app.use('/api/products', productRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/sellers', sellerRoutes);
 
 app.listen(PORT, () => {
     console.log(`🚀 ERP Comercial Server rodando na porta ${PORT}`);

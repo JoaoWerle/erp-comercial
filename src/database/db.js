@@ -62,13 +62,19 @@ async function initDB() {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 tenant_id INT,
                 title VARCHAR(255) NOT NULL,
+                sku VARCHAR(100) UNIQUE,
+                barcode VARCHAR(100),
                 description TEXT,
                 price DECIMAL(10, 2) NOT NULL,
                 cost_price DECIMAL(10, 2) DEFAULT 0,
                 category VARCHAR(100),
+                brand VARCHAR(100),
+                theme VARCHAR(50),
                 condition_state VARCHAR(50),
                 availableQuantity INT DEFAULT 0,
                 active BOOLEAN DEFAULT true,
+                has_variations BOOLEAN DEFAULT false,
+                variations_data JSON,
                 images JSON,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
@@ -86,6 +92,54 @@ async function initDB() {
         try { await pool.query("ALTER TABLE tenants ADD COLUMN primary_color VARCHAR(20) DEFAULT '#2563eb'"); } catch(e) {}
         try { await pool.query("ALTER TABLE tenants ADD COLUMN secondary_color VARCHAR(20) DEFAULT '#f3f4f6'"); } catch(e) {}
         try { await pool.query("ALTER TABLE tenants ADD COLUMN tertiary_color VARCHAR(20) DEFAULT '#ffffff'"); } catch(e) {}
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS product_attributes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tenant_id INT,
+                product_id INT,
+                name VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS product_attribute_values (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                attribute_id INT,
+                value VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (attribute_id) REFERENCES product_attributes(id) ON DELETE CASCADE
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS product_variants (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tenant_id INT,
+                product_id INT,
+                sku VARCHAR(100) UNIQUE,
+                barcode VARCHAR(100),
+                price DECIMAL(10, 2),
+                image VARCHAR(255),
+                active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS product_variant_options (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                variant_id INT,
+                attribute_value_id INT,
+                FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
+                FOREIGN KEY (attribute_value_id) REFERENCES product_attribute_values(id) ON DELETE CASCADE
+            )
+        `);
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS sales (
@@ -126,4 +180,4 @@ async function initDB() {
     }
 }
 
-module.exports = { pool, initDB };
+module.exports = { initDB, pool };

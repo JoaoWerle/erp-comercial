@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Selecionar todos os campos que precisam da máscara
     const currencyFields = [
-        'productPrice', 'productCost', // Modal de Produto
+        'productPrice', 'replenishCost', // Modal de Produto e Reposição
         'openingBalanceInput',         // Abertura de Caixa
         'actualBalanceInput',          // Fechamento de Caixa
         'transAmount',                 // Sangria/Aporte
@@ -138,15 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currencyFields.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            // Valor inicial padrão
             if (!el.value || el.value === "0") el.value = "0,00";
-            
-            el.addEventListener('input', (e) => {
-                // Prevenir loops se necessário, mas o replace(/\D/g) já ajuda
-                formatCurrencyInput(e.target);
-            });
-
-            // Ao focar, posicionar cursor no final
+            el.addEventListener('input', (e) => formatCurrencyInput(e.target));
             el.addEventListener('focus', (e) => {
                 setTimeout(() => {
                     const len = e.target.value.length;
@@ -154,6 +147,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 10);
             });
         }
+    });
+
+    // MÁSCARA CPF/CNPJ
+    const formatCpfCnpj = (input) => {
+        let v = input.value.replace(/\D/g, "");
+        if (v.length <= 11) {
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        } else {
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+        }
+        input.value = v.substring(0, 18);
+    };
+
+    // MÁSCARA TELEFONE
+    const formatPhone = (input) => {
+        let v = input.value.replace(/\D/g, "");
+        v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+        v = v.replace(/(\d)(\d{4})(\d{4})$/, "$1 $2-$3");
+        input.value = v.substring(0, 16);
+    };
+
+    const maskedFields = [
+        { id: 'customerCpf', formatter: formatCpfCnpj },
+        { id: 'customerPhone', formatter: formatPhone },
+        { id: 'sellerPhone', formatter: formatPhone }
+    ];
+
+    maskedFields.forEach(field => {
+        const el = document.getElementById(field.id);
+        if (el) el.addEventListener('input', (e) => field.formatter(e.target));
     });
 
     toggleBtn.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
@@ -178,8 +206,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetId === 'estoque') loadProducts();
             if (targetId === 'caixa') loadPosProducts();
             if (targetId === 'fechamento') loadCashManagement();
+            if (targetId === 'auditoria') loadCashHistory();
+            if (targetId === 'clientes') loadCustomers();
+            if (targetId === 'vendedores') loadSellers();
             if (targetId === 'lojistas') loadLojistas();
         });
+    });
+    
+    // Filtro de Busca na Tabela de Clientes
+    document.getElementById('customerSearch')?.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = currentCustomers.filter(c => 
+            c.name.toLowerCase().includes(term) || 
+            (c.cpf && c.cpf.includes(term)) ||
+            (c.phone && c.phone.includes(term))
+        );
+        renderCustomersTable(filtered);
     });
 
     // ==========================================
@@ -574,11 +616,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     tr.innerHTML = `
-                        <td style="padding: 1rem;">${date}${isCanceled ? ' <span style="font-size:0.7rem; background:#ef4444; color:white; padding:2px 4px; border-radius:4px;">CANCELADA</span>' : ''}</td>
-                        <td style="padding: 1rem; text-transform: capitalize;">${pay}</td>
-                        <td style="padding: 1rem; color: #ef4444;">${cost}</td>
-                        <td style="padding: 1rem; color: #2563eb;">${rev}</td>
-                        <td style="padding: 1rem; color: #10b981; font-weight: bold;">${prof}</td>
+                        <td style="padding: 1rem; font-size: 0.85rem;">
+                            <div style="font-weight: 600;">${date}</div>
+                            ${isCanceled ? '<span style="font-size:0.65rem; background:#fee2e2; color:#991b1b; padding:2px 6px; border-radius:4px; font-weight:700; border:1px solid #fecaca;">CANCELADA</span>' : ''}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <div style="font-weight: 700; color: #334155;">${s.customer_name || 'Venda Avulsa'}</div>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <div style="font-weight: 600; color: #64748b; font-size: 0.85rem;">${s.seller_name || '-'}</div>
+                        </td>
+                        <td style="padding: 1rem; text-transform: capitalize; font-size: 0.85rem;">${pay}</td>
+                        <td style="padding: 1rem; color: #1e293b; font-weight: 800;">${rev}</td>
                         <td style="padding: 1rem; text-align: center;">
                             <div style="display: flex; justify-content: center; gap: 8px;">
                                 <button class="icon-btn view-sale-btn" title="Ver Detalhes" style="color: #6366f1;">
@@ -658,7 +707,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemsHtml += `
                     <tr style="border-bottom: 1px solid #f9fafb;">
                         <td style="padding: 1rem 0;">
-                            <div style="font-weight: 600; color: #111827; font-size: 0.95rem;">${item.name || 'Produto'}</div>
+                            <div style="font-weight: 700; color: #111827; font-size: 0.95rem;">${item.name || 'Produto'}</div>
+                            ${item.variantDesc ? `<div style="font-size: 0.8rem; color: #6366f1; font-weight: 600; margin: 0.25rem 0;">${item.variantDesc}</div>` : ''}
                             <div style="color: #6b7280; font-size: 0.8rem;">Vlr. Unit: ${parseFloat(item.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
                         </td>
                         <td style="padding: 1rem 0; text-align: center; color: #374151;">${item.quantity}</td>
@@ -676,6 +726,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div style="background: #f8fafc; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px dashed #e2e8f0;">
+                        <div>
+                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Cliente</div>
+                            <div style="font-size: 0.9rem; font-weight: 700; color: #334155;">${sale.customer_name || 'Venda Avulsa'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase;">Vendedor</div>
+                            <div style="font-size: 0.9rem; font-weight: 700; color: #334155;">${sale.seller_name || 'Não informado'}</div>
+                        </div>
+                    </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem; color: #64748b;">
                         <span>Método de Pagamento</span>
                         <div style="display: flex; align-items: center; gap: 0.4rem; color: #334155; font-weight: 600;">
@@ -913,6 +973,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Filtro de Busca no Estoque
+    document.getElementById('productSearch')?.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = currentProducts.filter(p => 
+            p.title.toLowerCase().includes(term) || 
+            p.category.toLowerCase().includes(term)
+        );
+        renderProductsTable(filtered);
+    });
+
     const renderProductsTable = (products) => {
         const tbody = document.getElementById('productsTableBody');
         tbody.innerHTML = '';
@@ -920,15 +990,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = parseFloat(p.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const imageThumb = (p.images && p.images.length > 0) ? `<img src="${p.images[0]}" alt="${p.title}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">` : '<div style="width: 50px; height: 50px; background: #e5e7eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #9ca3af; text-align: center;">Sem foto</div>';
 
+            const totalStock = (p.variants || []).reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
             const inactiveRowStyle = (p.active === false || p.active === 0) ? 'background-color: #f7a9a9ff;' : '';
 
             tbody.innerHTML += `
                 <tr style="${inactiveRowStyle}">
                     <td style="vertical-align: middle;">${imageThumb}</td>
-                    <td style="vertical-align: middle;"><strong>${p.title}</strong></td>
+                    <td style="vertical-align: middle;">
+                        <strong>${p.title}</strong>
+                        ${p.has_variations ? `<div style="font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem;">${p.variants.length} variações</div>` : ''}
+                    </td>
                     <td style="vertical-align: middle;">${p.category}</td>
                     <td style="vertical-align: middle; text-align: center;">
-                        <span style="display: block; font-weight: 600;">${p.availableQuantity}</span>
+                        <span style="display: block; font-weight: 600; font-size: 1.1rem; color: ${totalStock <= 0 ? '#ef4444' : '#1e293b'}">${totalStock}</span>
                         <span style="font-size: 0.7rem; color: #6b7280;">unidades</span>
                     </td>
                     <td style="vertical-align: middle;">${price}</td>
@@ -966,11 +1040,27 @@ document.addEventListener('DOMContentLoaded', () => {
         form.elements['title'].value = p.title;
         form.elements['description'].value = p.description || '';
         form.elements['price'].value = parseFloat(p.price || 0).toFixed(2).replace('.', ',');
-        form.elements['cost_price'].value = parseFloat(p.cost_price || 0).toFixed(2).replace('.', ',');
-        form.elements['availableQuantity'].value = p.availableQuantity;
         form.elements['category'].value = p.category;
+        form.elements['brand'].value = p.brand || '';
+        form.elements['sku'].value = p.sku || '';
+        form.elements['barcode'].value = p.barcode || '';
         form.elements['theme'].value = p.theme || '';
         form.elements['active'].value = p.active === false || p.active === 0 ? "false" : "true";
+
+        // Variações
+        const hasVars = p.has_variations === 1 || p.has_variations === true;
+        document.getElementById('hasVariationsToggle').checked = hasVars;
+        document.getElementById('variationsSection').style.display = hasVars ? 'block' : 'none';
+        
+        // Limpar e popular atributos
+        const container = document.getElementById('attributesContainer');
+        container.innerHTML = '';
+        if (hasVars && p.variations_data) {
+            const data = typeof p.variations_data === 'string' ? JSON.parse(p.variations_data) : p.variations_data;
+            if (data.attributes) {
+                data.attributes.forEach(attr => addAttributeRow(attr.name, attr.values));
+            }
+        }
 
         modal.style.display = 'flex';
     };
@@ -981,11 +1071,14 @@ document.addEventListener('DOMContentLoaded', () => {
             form.reset();
             document.getElementById('productId').value = '';
             form.elements['price'].value = '0,00';
-            form.elements['cost_price'].value = '0,00';
+            document.getElementById('hasVariationsToggle').checked = false;
+            document.getElementById('variationsSection').style.display = 'none';
+            document.getElementById('attributesContainer').innerHTML = '';
             modal.style.display = 'flex';
         });
 
         closeBtn.addEventListener('click', () => { modal.style.display = 'none'; form.reset(); });
+        document.getElementById('cancelProductBtn')?.addEventListener('click', () => { modal.style.display = 'none'; form.reset(); });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -996,11 +1089,27 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const formData = new FormData(form);
                 
-                // Converter vírgula para ponto nos campos de preço para o backend
+                // Preço
                 const priceValue = formData.get('price') ? formData.get('price').replace(',', '.') : '0.00';
-                const costValue = formData.get('cost_price') ? formData.get('cost_price').replace(',', '.') : '0.00';
                 formData.set('price', priceValue);
-                formData.set('cost_price', costValue);
+
+                // Variações Data
+                const hasVariations = document.getElementById('hasVariationsToggle').checked;
+                formData.set('has_variations', hasVariations ? 'true' : 'false');
+
+                if (hasVariations) {
+                    const attributes = [];
+                    document.querySelectorAll('.attribute-row').forEach(row => {
+                        const name = row.querySelector('.attr-name').value;
+                        const values = row.querySelector('.attr-values').value.split(',').map(v => v.trim()).filter(v => v);
+                        if (name && values.length > 0) {
+                            attributes.push({ name, values });
+                        }
+                    });
+                    formData.set('variations_data', JSON.stringify({ attributes }));
+                } else {
+                    formData.set('variations_data', null);
+                }
 
                 const id = document.getElementById('productId').value;
                 const url = id ? `/api/products/${id}` : '/api/products';
@@ -1008,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const res = await fetch(url, {
                     method: method,
-                    headers: { 'Authorization': `Bearer ${token}` }, // FormData sets boundary automatically
+                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
                 if (res.ok) {
@@ -1017,17 +1126,114 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadProducts();
                     showToast('Produto salvo com sucesso!', 'success');
                 } else {
-                    showToast('Erro ao salvar produto.', 'error');
+                    const errorData = await res.json();
+                    showToast(errorData.error || 'Erro ao salvar produto.', 'error');
                 }
             } catch (e) {
                 console.error(e);
                 showToast('Erro de conexão.', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'Salvar';
+                submitBtn.innerText = 'Salvar Produto';
             }
         });
     }
+
+    // Lógica de Variações UI
+    document.getElementById('hasVariationsToggle')?.addEventListener('change', (e) => {
+        document.getElementById('variationsSection').style.display = e.target.checked ? 'block' : 'none';
+        if (e.target.checked && document.getElementById('attributesContainer').children.length === 0) {
+            addAttributeRow();
+        }
+    });
+
+    const addAttributeRow = (name = '', values = []) => {
+        const container = document.getElementById('attributesContainer');
+        const row = document.createElement('div');
+        row.className = 'attribute-row';
+        row.style.cssText = 'display: grid; grid-template-columns: 1fr 2fr auto; gap: 0.75rem; align-items: flex-end; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 0.75rem;';
+        
+        row.innerHTML = `
+            <div>
+                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem;">Atributo</label>
+                <input type="text" class="attr-name" placeholder="Ex: Cor" value="${name}" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.25rem;">Valores (separados por vírgula)</label>
+                <input type="text" class="attr-values" placeholder="Ex: Azul, Vermelho, Preto" value="${values.join(', ')}" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+            </div>
+            <button type="button" class="remove-attr-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0.5rem;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        `;
+        
+        const nameInput = row.querySelector('.attr-name');
+        const valuesInput = row.querySelector('.attr-values');
+        
+        const updateEvent = () => updateVariantsPreview();
+        nameInput.addEventListener('input', updateEvent);
+        valuesInput.addEventListener('input', updateEvent);
+        
+        row.querySelector('.remove-attr-btn').onclick = () => {
+            row.remove();
+            updateVariantsPreview();
+        };
+        container.appendChild(row);
+        updateVariantsPreview();
+    };
+
+    const updateVariantsPreview = () => {
+        const attributes = [];
+        document.querySelectorAll('.attribute-row').forEach(row => {
+            const name = row.querySelector('.attr-name').value.trim();
+            const values = row.querySelector('.attr-values').value.split(',').map(v => v.trim()).filter(v => v);
+            if (name && values.length > 0) {
+                attributes.push({ name, values });
+            }
+        });
+
+        const previewContainer = document.getElementById('variantsPreviewContainer');
+        const variantsList = document.getElementById('variantsList');
+
+        if (attributes.length === 0) {
+            previewContainer.style.display = 'none';
+            return;
+        }
+
+        previewContainer.style.display = 'block';
+        const combinations = generateCombinations(attributes);
+        
+        variantsList.innerHTML = combinations.map(combo => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: 700; color: #1e293b;">${combo.join(' / ')}</span>
+                </div>
+                <div style="color: #64748b; font-size: 0.75rem;">
+                    Estrutura pronta para SKU individual
+                </div>
+            </div>
+        `).join('');
+    };
+
+    const generateCombinations = (attributes) => {
+        if (attributes.length === 0) return [];
+        
+        const combinations = attributes.reduce((acc, attr) => {
+            if (acc.length === 0) return attr.values.map(v => [v]);
+            
+            const newAcc = [];
+            acc.forEach(prevCombo => {
+                attr.values.forEach(value => {
+                    newAcc.push([...prevCombo, value]);
+                });
+            });
+            return newAcc;
+        }, []);
+        
+        return combinations;
+    };
+
+    document.getElementById('addAttributeBtn')?.addEventListener('click', () => addAttributeRow());
 
     // ==========================================
     // REPOSIÇÃO E HISTÓRICO DE ESTOQUE
@@ -1036,34 +1242,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const replenishForm = document.getElementById('replenishForm');
     const stockHistoryModal = document.getElementById('stockHistoryModal');
 
-    window.openReplenishModal = (id) => {
+    window.openReplenishModal = async (id) => {
         const p = currentProducts.find(prod => prod.id === id);
         if (!p) return;
         document.getElementById('replenishProductId').value = p.id;
         document.getElementById('replenishProductName').innerText = p.title;
-        document.getElementById('replenishQuantity').value = '';
         document.getElementById('replenishReason').value = '';
+        
+        const list = document.getElementById('replenishVariantsList');
+        list.innerHTML = '<div style="text-align: center; padding: 2rem; color: #94a3b8;">Carregando variações...</div>';
         replenishModal.style.display = 'flex';
+
+        try {
+            const res = await fetch(`/api/products/${id}/variants`, { headers: fetchHeaders });
+            if (res.ok) {
+                const variants = await res.json();
+                list.innerHTML = variants.map(v => `
+                    <div class="replenish-item-row" data-variant-id="${v.id}" style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0; display: grid; grid-template-columns: 1.5fr 1fr 1.2fr; gap: 1rem; align-items: end;">
+                        <div>
+                            <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Variação</span>
+                            <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem; margin-top: 0.25rem;">${v.attributes_description || v.sku}</div>
+                            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.1rem;">Atual: <strong>${v.stock_quantity || 0}</strong> un</div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.75rem; color: #475569;">Qtd. Entrada</label>
+                            <input type="number" class="replenish-qty" min="0" placeholder="0"
+                                style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 0.3rem; font-weight: 600; font-size: 0.75rem; color: #475569;">Custo (R$)</label>
+                            <input type="text" class="replenish-cost" value="${parseFloat(v.cost_price || 0).toFixed(2).replace('.', ',')}"
+                                style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; font-weight: 600;">
+                        </div>
+                    </div>
+                `).join('');
+
+                // Aplicar máscara nos novos campos de custo
+                document.querySelectorAll('.replenish-cost').forEach(input => {
+                    input.addEventListener('input', (e) => formatCurrencyInput(e.target));
+                    // Posicionar cursor no final ao focar
+                    input.addEventListener('focus', (e) => {
+                        setTimeout(() => {
+                            const len = e.target.value.length;
+                            e.target.setSelectionRange(len, len);
+                        }, 10);
+                    });
+                });
+            } else {
+                list.innerHTML = '<div style="text-align: center; padding: 2rem; color: #ef4444;">Erro ao carregar variações.</div>';
+            }
+        } catch (e) {
+            console.error(e);
+            list.innerHTML = '<div style="text-align: center; padding: 2rem; color: #ef4444;">Erro de conexão.</div>';
+        }
     };
 
     replenishForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const productId = document.getElementById('replenishProductId').value;
-        const quantityToAdd = document.getElementById('replenishQuantity').value;
         const reason = document.getElementById('replenishReason').value;
+        
+        const entries = [];
+        document.querySelectorAll('.replenish-item-row').forEach(row => {
+            const variantId = row.getAttribute('data-variant-id');
+            const quantityToAdd = parseInt(row.querySelector('.replenish-qty').value) || 0;
+            const cost_price = row.querySelector('.replenish-cost').value.replace(/\./g, '').replace(',', '.');
+            
+            if (quantityToAdd > 0) {
+                entries.push({ variantId, quantityToAdd, cost_price });
+            }
+        });
+
+        if (entries.length === 0) {
+            showToast('Informe a quantidade em pelo menos uma variação.', 'error');
+            return;
+        }
 
         try {
-            const res = await fetch('/api/inventory/replenish', {
+            const res = await fetch('/api/inventory/bulk-replenish', {
                 method: 'POST',
                 headers: { ...fetchHeaders, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantityToAdd, reason })
+                body: JSON.stringify({ productId, reason, entries })
             });
             if (res.ok) {
                 replenishModal.style.display = 'none';
                 loadProducts();
-                showToast('Estoque atualizado!', 'success');
+                showToast('Estoque atualizado com sucesso!', 'success');
             } else {
-                showToast('Erro ao atualizar estoque.', 'error');
+                const err = await res.json();
+                showToast(err.error || 'Erro ao atualizar estoque.', 'error');
             }
         } catch (error) {
             console.error(error);
@@ -1096,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.getElementById('stockHistoryTableBody');
         tbody.innerHTML = '';
         if (history.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: #9ca3af;">Nenhuma movimentação registrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="padding: 2rem; text-align: center; color: #9ca3af;">Nenhuma movimentação registrada.</td></tr>';
             return;
         }
 
@@ -1109,9 +1376,13 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.innerHTML += `
                 <tr>
                     <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6;">${date}</td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6;">${h.reason}</td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; text-align: center; color: ${changeColor}; font-weight: 600;">${changeIcon}${h.quantity_change}</td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; text-align: center; font-weight: 600;">${h.new_quantity}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6;">
+                        <div style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">${h.variant_description || 'Produto Geral'}</div>
+                        <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">${h.variant_sku || '-'}</div>
+                    </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; color: #475569; font-size: 0.85rem;">${h.reason}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; text-align: center; color: ${changeColor}; font-weight: 700;">${changeIcon}${h.quantity_change}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #f3f4f6; text-align: center; font-weight: 700; color: #1e293b;">${h.new_quantity}</td>
                 </tr>
             `;
         });
@@ -1198,7 +1469,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const grid = document.getElementById('posProductList');
         grid.innerHTML = '';
         products.forEach(p => {
-            const isOutOfStock = p.availableQuantity <= 0;
+            const totalStock = (p.variants || []).reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+            const isOutOfStock = totalStock <= 0;
             const card = document.createElement('div');
 
             card.style.cssText = `
@@ -1214,7 +1486,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const stockLabel = isOutOfStock
                 ? '<div style="font-size: 0.8rem; color: #ef4444; font-weight: bold; margin-bottom: 0.5rem;">Esgotado</div>'
-                : `<div style="font-size: 0.8rem; color: #6b7280; margin-bottom: 0.5rem;">Estoque: ${p.availableQuantity}</div>`;
+                : `<div style="font-size: 0.8rem; color: #6b7280; margin-bottom: 0.5rem;">Estoque: ${totalStock}</div>`;
 
             const imageThumb = (p.images && p.images.length > 0)
                 ? `<img src="${p.images[0]}" alt="${p.title}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">`
@@ -1243,12 +1515,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const stockFilter = document.getElementById('posStockFilter')?.value || 'todos';
 
         // Filtrar inativos por padrão
-        let filtered = currentProducts.filter(p => p.title.toLowerCase().includes(term) && p.active !== false && p.active !== 0);
+        let filtered = currentProducts.filter(p => {
+            const matchTitle = p.title.toLowerCase().includes(term);
+            const matchSku = (p.sku || '').toLowerCase().includes(term);
+            const matchBarcode = (p.barcode || '').toLowerCase().includes(term);
+            
+            // Buscar nas variantes
+            const matchVariant = (p.variants || []).some(v => 
+                (v.sku || '').toLowerCase().includes(term) || 
+                (v.barcode || '').toLowerCase().includes(term)
+            );
+
+            return (matchTitle || matchSku || matchBarcode || matchVariant) && (p.active !== false && p.active !== 0);
+        });
 
         if (stockFilter === 'com_estoque') {
-            filtered = filtered.filter(p => p.availableQuantity > 0);
+            filtered = filtered.filter(p => {
+                const totalStock = (p.variants || []).reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+                return totalStock > 0;
+            });
         } else if (stockFilter === 'sem_estoque') {
-            filtered = filtered.filter(p => p.availableQuantity <= 0);
+            filtered = filtered.filter(p => {
+                const totalStock = (p.variants || []).reduce((acc, v) => acc + (v.stock_quantity || 0), 0);
+                return totalStock <= 0;
+            });
         }
 
         renderPosProducts(filtered);
@@ -1257,29 +1547,172 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('posSearch')?.addEventListener('input', applyPosFilters);
     document.getElementById('posStockFilter')?.addEventListener('change', applyPosFilters);
 
-    const addToPosCart = (product) => {
-        const existing = posCart.find(i => i.id === product.id);
+    window.changePosVariantQty = (delta) => {
+        const input = document.getElementById('posVariantQty');
+        let val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        input.value = val;
+    };
+
+    const addToPosCart = async (product, variant = null) => {
+        if (product.has_variations && !variant) {
+            document.getElementById('posVariantProductName').innerText = product.title;
+            document.getElementById('posVariantQty').value = 1;
+            const container = document.getElementById('posVariantAttributes');
+            const preview = document.getElementById('posVariantStockPreview');
+            const addBtn = document.getElementById('posVariantAddBtn');
+            
+            container.innerHTML = '<div style="text-align: center; padding: 1rem; color: #94a3b8;">Carregando opções...</div>';
+            preview.style.display = 'none';
+            addBtn.disabled = true;
+            document.getElementById('posVariantModal').style.display = 'flex';
+
+            try {
+                const res = await fetch(`/api/products/${product.id}/variants`, { headers: fetchHeaders });
+                const variants = await res.json();
+                
+                // Extrair atributos únicos e seus valores
+                const attributesMap = {};
+                // Usamos a string de descrição ou o variations_data se disponível
+                const varData = typeof product.variations_data === 'string' ? JSON.parse(product.variations_data) : product.variations_data;
+                
+                if (varData && varData.attributes) {
+                    container.innerHTML = varData.attributes.map(attr => `
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; color: #475569;">${attr.name}</label>
+                            <select class="pos-variant-select" data-attr="${attr.name}" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; background: white; cursor: pointer;">
+                                <option value="">Selecione ${attr.name}...</option>
+                                ${attr.values.map(v => `<option value="${v}">${v}</option>`).join('')}
+                            </select>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div style="color: #ef4444; text-align: center;">Estrutura de variações inválida.</div>';
+                    return;
+                }
+
+                const checkSelection = () => {
+                    const selects = document.querySelectorAll('.pos-variant-select');
+                    const selections = Array.from(selects).map(s => s.value);
+                    const allSelected = selections.every(v => v !== '');
+
+                    if (allSelected) {
+                        // Tentar encontrar a variante que bate com todas as seleções
+                        // A descrição no banco é "Valor1 · Valor2"
+                        const targetDesc = selections.join(' · ');
+                        const match = variants.find(v => v.attributes_description === targetDesc);
+
+                        if (match) {
+                            const isOutOfStock = match.stock_quantity <= 0;
+                            preview.style.display = 'block';
+                            preview.style.background = isOutOfStock ? '#fef2f2' : '#fffbeb';
+                            preview.style.borderColor = isOutOfStock ? '#fecaca' : '#fef3c7';
+                            preview.style.color = isOutOfStock ? '#991b1b' : '#92400e';
+                            preview.innerHTML = `
+                                <div>${match.sku}</div>
+                                <div style="font-size: 1.1rem; margin-top: 0.25rem;">Estoque: ${match.stock_quantity} un</div>
+                                <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-top: 0.5rem;">
+                                    R$ ${parseFloat(match.price > 0 ? match.price : product.price).toFixed(2).replace('.', ',')}
+                                </div>
+                            `;
+                            addBtn.disabled = isOutOfStock;
+                            addBtn.onclick = () => {
+                                const qty = parseInt(document.getElementById('posVariantQty').value);
+                                addToPosCart(product, { ...match, requestedQty: qty });
+                            };
+                        } else {
+                            preview.style.display = 'block';
+                            preview.style.background = '#f1f5f9';
+                            preview.style.borderColor = '#e2e8f0';
+                            preview.style.color = '#64748b';
+                            preview.innerText = 'Combinação não disponível.';
+                            addBtn.disabled = true;
+                        }
+                    } else {
+                        preview.style.display = 'none';
+                        addBtn.disabled = true;
+                    }
+                };
+
+                document.querySelectorAll('.pos-variant-select').forEach(s => s.onchange = checkSelection);
+
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div style="color: #ef4444; text-align: center; padding: 1rem;">Erro ao carregar opções.</div>';
+            }
+            return;
+        }
+
+        // Se chegou aqui, ou não tem variações ou a variante já foi configurada no modal
+        const targetVariant = variant;
+        const requestedQty = variant && variant.requestedQty ? variant.requestedQty : 1;
+        
+        const cartKey = targetVariant ? `${product.id}-${targetVariant.id}` : `${product.id}`;
+        const existing = posCart.find(i => i.cartKey === cartKey);
+        
+        const maxStock = targetVariant ? targetVariant.stock_quantity : (product.variants ? product.variants[0].stock_quantity : 0);
+        const itemPrice = targetVariant ? (parseFloat(targetVariant.price) > 0 ? targetVariant.price : product.price) : product.price;
+
         if (existing) {
-            if (existing.quantity >= product.availableQuantity) {
-                showToast('Quantidade máxima em estoque atingida.', 'error');
+            if (existing.quantity + requestedQty > maxStock) {
+                showToast(`Estoque insuficiente. Disponível: ${maxStock}`, 'error');
                 return;
             }
-            existing.quantity++;
+            existing.quantity += requestedQty;
         } else {
+            if (requestedQty > maxStock) {
+                showToast(`Estoque insuficiente. Disponível: ${maxStock}`, 'error');
+                return;
+            }
             posCart.push({
+                cartKey,
                 id: product.id,
+                variantId: targetVariant ? targetVariant.id : null,
+                variantDesc: targetVariant ? targetVariant.attributes_description : null,
                 title: product.title,
-                price: product.price,
-                quantity: 1,
-                max: product.availableQuantity,
+                sku: targetVariant ? targetVariant.sku : product.sku,
+                price: itemPrice,
+                quantity: requestedQty,
+                max: maxStock,
                 image: (product.images && product.images.length > 0) ? product.images[0] : null
             });
         }
         updatePosCartUI();
+        document.getElementById('posVariantModal').style.display = 'none';
     };
 
-    const removeFromPosCart = (id) => {
-        posCart = posCart.filter(i => i.id !== id);
+    window.updatePosCartQty = (cartKey, newQty) => {
+        const item = posCart.find(i => i.cartKey === cartKey);
+        if (!item) return;
+
+        const qty = parseInt(newQty);
+        if (isNaN(qty) || qty <= 0) {
+            removeFromPosCart(cartKey);
+            return;
+        }
+
+        if (qty > item.max) {
+            showToast(`Estoque insuficiente. Máximo: ${item.max}`, 'error');
+            item.quantity = item.max;
+        } else {
+            item.quantity = qty;
+        }
+        updatePosCartUI();
+    };
+
+    window.addToPosCartFromModal = (productId, variantId) => {
+        const product = currentProducts.find(p => p.id === productId);
+        // Precisamos buscar os detalhes da variante
+        fetch(`/api/products/${productId}/variants`, { headers: fetchHeaders })
+            .then(res => res.json())
+            .then(variants => {
+                const variant = variants.find(v => v.id === variantId);
+                addToPosCart(product, variant);
+            });
+    };
+
+    const removeFromPosCart = (cartKey) => {
+        posCart = posCart.filter(i => i.cartKey !== cartKey);
         updatePosCartUI();
     };
 
@@ -1289,7 +1722,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkoutBtn = document.getElementById('posCheckoutBtn');
 
         if (posCart.length === 0) {
-            cartEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem;">Nenhum item adicionado.</p>';
+            cartEl.innerHTML = '<p style="color: #6b7280; font-size: 0.9rem; text-align: center; padding: 2rem;">Seu carrinho está vazio</p>';
             totalEl.innerText = 'R$ 0,00';
             checkoutBtn.disabled = true;
             return;
@@ -1298,20 +1731,36 @@ document.addEventListener('DOMContentLoaded', () => {
         cartEl.innerHTML = '';
         let total = 0;
         posCart.forEach(item => {
-            total += (item.price * item.quantity);
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
             const div = document.createElement('div');
-            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #f3f4f6;';
+            div.style.cssText = 'background: white; border-radius: 12px; border: 1px solid #f1f5f9; padding: 1rem; margin-bottom: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
             div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    ${item.image ? `<img src="${item.image}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : '<div style="width: 40px; height: 40px; background: #e5e7eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #9ca3af; text-align: center;">Sem foto</div>'}
-                    <div>
-                        <div style="font-weight: 500; font-size: 0.9rem;">${item.title}</div>
-                        <div style="font-size: 0.8rem; color: #6b7280;">${item.quantity}x R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</div>
+                <div style="display: flex; gap: 12px;">
+                    ${item.image ? `<img src="${item.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">` : '<div style="width: 50px; height: 50px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center;">Sem foto</div>'}
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; color: #1e293b;">${item.title}</div>
+                                ${item.variantDesc ? `<div style="font-size: 0.8rem; color: #64748b; font-weight: 500;">${item.variantDesc}</div>` : ''}
+                            </div>
+                            <button style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; padding: 0 0.5rem;" onclick="removeFromPosCart('${item.cartKey}')">&times;</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                            <div style="display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px;">
+                                <button onclick="updatePosCartQty('${item.cartKey}', ${item.quantity - 1})" style="border: none; background: none; width: 24px; height: 24px; cursor: pointer; color: #64748b; font-weight: bold;">-</button>
+                                <input type="number" value="${item.quantity}" onchange="updatePosCartQty('${item.cartKey}', this.value)" 
+                                    style="width: 40px; text-align: center; border: none; background: none; font-size: 0.9rem; font-weight: 700; color: #1e293b;">
+                                <button onclick="updatePosCartQty('${item.cartKey}', ${item.quantity + 1})" style="border: none; background: none; width: 24px; height: 24px; cursor: pointer; color: #64748b; font-weight: bold;">+</button>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.75rem; color: #94a3b8;">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')} cada</div>
+                                <div style="font-weight: 800; color: #1e293b; font-size: 1rem;">R$ ${itemTotal.toFixed(2).replace('.', ',')}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold;">X</button>
             `;
-            div.querySelector('button').onclick = () => removeFromPosCart(item.id);
             cartEl.appendChild(div);
         });
 
@@ -1376,13 +1825,22 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const btn = document.getElementById('confirmCheckoutBtn');
+        const sellerId = document.getElementById('posSellerSelect').value;
+
+        if (!sellerId) {
+            showToast('Por favor, selecione um vendedor!', 'error');
+            return;
+        }
+
         btn.disabled = true;
         btn.innerText = 'Processando...';
 
         try {
             const items = posCart.map(i => ({ 
                 id: i.id, 
-                name: i.name, 
+                variantId: i.variantId,
+                variantDesc: i.variantDesc,
+                name: i.title, 
                 price: i.price, 
                 quantity: i.quantity 
             }));
@@ -1393,7 +1851,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 installments: paymentMethodEl.value === 'credito' ? document.getElementById('installments').value : 1,
                 fee: parseFloat(feeAmountEl.value.replace(',', '.')) || 0,
                 discount: parseFloat(discountAmountEl.value.replace(',', '.')) || 0,
-                total: posTotalValueNum + (parseFloat(feeAmountEl.value.replace(',', '.')) || 0) - (parseFloat(discountAmountEl.value.replace(',', '.')) || 0)
+                total: posTotalValueNum + (parseFloat(feeAmountEl.value.replace(',', '.')) || 0) - (parseFloat(discountAmountEl.value.replace(',', '.')) || 0),
+                customerId: selectedCustomerId,
+                sellerId: document.getElementById('posSellerSelect').value || null
             };
 
             const res = await fetch('/api/sales', {
@@ -1406,6 +1866,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Venda finalizada com sucesso!', 'success');
                 checkoutModal.style.display = 'none';
                 posCart = [];
+                selectedCustomerId = null;
+                document.getElementById('posSellerSelect').value = '';
+                if (window.clearSelectedCustomer) window.clearSelectedCustomer();
                 updatePosCartUI();
                 await loadProducts(); // Atualiza estoque na memória
                 applyPosFilters(); // Re-aplica filtros ao atualizar grid
@@ -1583,6 +2046,56 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     let currentCashSession = null;
 
+    const loadCashHistory = async () => {
+        try {
+            const res = await fetch('/api/cash/history', { headers: fetchHeaders });
+            const sessions = await res.json();
+            const body = document.getElementById('cashHistoryBody');
+            if (!body) return;
+
+            body.innerHTML = sessions.length ? sessions.map(s => {
+                const diff = Number(s.closing_balance_actual) - Number(s.closing_balance_expected);
+                let badgeStyle = 'background: #dcfce7; color: #166534;'; // OK
+                let badgeText = 'CORRETO';
+
+                if (diff > 0) {
+                    badgeStyle = 'background: #eff6ff; color: #1e40af;'; // SOBRA
+                    badgeText = `SOBRA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+                } else if (diff < 0) {
+                    badgeStyle = 'background: #fee2e2; color: #991b1b;'; // QUEBRA
+                    badgeText = `QUEBRA (${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+                }
+
+                return `
+                    <tr style="border-bottom: 1px solid #f3f4f6; font-size: 0.9rem;">
+                        <td style="padding: 1rem;">
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${new Date(s.closed_at).toLocaleDateString('pt-BR')}</div>
+                            <div style="font-size: 0.75rem; color: #10b981; display: flex; align-items: center; gap: 4px;">
+                                <span style="font-weight: 700; opacity: 0.7;">ABR:</span> ${new Date(s.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            <div style="font-size: 0.75rem; color: #ef4444; display: flex; align-items: center; gap: 4px;">
+                                <span style="font-weight: 700; opacity: 0.7;">FEC:</span> ${new Date(s.closed_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; color: #4b5563;">${s.closed_by || 'Sistema'}</td>
+                        <td style="padding: 1rem; text-align: right; color: #6b7280;">${Number(s.closing_balance_expected).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        <td style="padding: 1rem; text-align: right; font-weight: 600; color: #1f2937;">${Number(s.closing_balance_actual).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700; ${badgeStyle}">
+                                ${badgeText}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <span style="padding: 0.25rem 0.5rem; background: #f3f4f6; color: #6b7280; border-radius: 4px; font-size: 0.7rem;">ENCERRADO</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('') : '<tr><td colspan="6" style="padding: 3rem; text-align: center; color: #9ca3af;">Nenhum histórico encontrado.</td></tr>';
+        } catch (error) {
+            console.error('Erro ao carregar histórico:', error);
+        }
+    };
+
     const loadCashManagement = async () => {
         try {
             const res = await fetch('/api/cash/current', { headers: fetchHeaders });
@@ -1659,29 +2172,36 @@ document.addEventListener('DOMContentLoaded', () => {
             // Renderizar Atividades
             const activitiesBody = document.getElementById('currentSessionActivities');
             if (activitiesBody) {
-                const activities = [
-                    ...(Array.isArray(sales) ? sales.filter(s => String(s.payment_method).toLowerCase() === 'dinheiro' && s.status === 'completed').map(s => ({
-                        time: s.created_at ? new Date(s.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
-                        type: 'Venda',
-                        desc: 'Venda em Dinheiro',
-                        amount: Number(s.total_revenue || 0),
-                        color: '#10b981'
-                    })) : []),
-                    ...(Array.isArray(transactions) ? transactions.map(t => ({
-                        time: t.created_at ? new Date(t.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
-                        type: t.type === 'in' ? 'Aporte' : 'Sangria',
-                        desc: t.reason || 'Sem descrição',
-                        amount: t.type === 'in' ? Number(t.amount || 0) : -Number(t.amount || 0),
-                        color: t.type === 'in' ? '#3b82f6' : '#ef4444'
-                    })) : [])
-                ].sort((a, b) => b.time.localeCompare(a.time));
+            const activities = [
+                ...(Array.isArray(sales) ? sales.filter(s => s.status === 'completed').map(s => ({
+                    time: s.created_at ? new Date(s.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+                    type: 'Venda',
+                    desc: `${s.customer_name || 'Consumidor'} (Vend: ${s.seller_name || '?'})`,
+                    amount: Number(s.total_revenue || 0),
+                    color: '#10b981',
+                    isCash: String(s.payment_method).toLowerCase() === 'dinheiro'
+                })) : []),
+                ...(Array.isArray(transactions) ? transactions.map(t => ({
+                    time: t.created_at ? new Date(t.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+                    type: t.type === 'in' ? 'Aporte' : 'Sangria',
+                    desc: t.reason || 'Sem descrição',
+                    amount: t.type === 'in' ? Number(t.amount || 0) : -Number(t.amount || 0),
+                    color: t.type === 'in' ? '#3b82f6' : '#ef4444',
+                    isCash: true
+                })) : [])
+            ].sort((a, b) => b.time.localeCompare(a.time));
 
                 activitiesBody.innerHTML = activities.length ? activities.map(a => `
                     <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 0.75rem; color: #6b7280;">${a.time}</td>
-                        <td style="padding: 0.75rem; font-weight: 600; color: ${a.color}">${a.type}</td>
-                        <td style="padding: 0.75rem; color: #374151;">${a.desc}</td>
-                        <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: ${a.color}">${a.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        <td style="padding: 0.75rem; color: #6b7280; font-size: 0.8rem;">${a.time}</td>
+                        <td style="padding: 0.75rem; font-weight: 700; color: ${a.color}; font-size: 0.85rem;">${a.type}</td>
+                        <td style="padding: 0.75rem;">
+                            <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem;">${a.desc}</div>
+                            ${!a.isCash ? '<div style="font-size: 0.7rem; color: #94a3b8; font-weight: 500;">(Não afeta saldo físico)</div>' : ''}
+                        </td>
+                        <td style="padding: 0.75rem; text-align: right; font-weight: 700; color: #1e293b; font-size: 0.9rem;">
+                            ${a.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
                     </tr>
                 `).join('') : '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: #9ca3af;">Nenhuma atividade nesta sessão</td></tr>';
             }
@@ -1854,6 +2374,265 @@ document.addEventListener('DOMContentLoaded', () => {
     
     loadStoreSettings(); // Carregar marca da loja
     loadProducts();
+
+    // ==========================================
+    // CLIENTES & VENDEDORES
+    // ==========================================
+
+    let currentCustomers = [];
+    let currentSellers = [];
+    let selectedCustomerId = null;
+
+    // --- CLIENTES ---
+    const loadCustomers = async () => {
+        try {
+            const res = await fetch('/api/customers', { headers: fetchHeaders });
+            currentCustomers = await res.json();
+            renderCustomersTable(currentCustomers);
+        } catch (e) { console.error('Erro ao carregar clientes', e); }
+    };
+
+    const renderCustomersTable = (data) => {
+        const body = document.getElementById('customersTableBody');
+        if (!body) return;
+        body.innerHTML = data.map(c => `
+            <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;">
+                <td style="padding: 1rem;">
+                    <div style="font-weight: 700; color: #1e293b;">${c.name}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">${c.email || 'Sem e-mail'}</div>
+                </td>
+                <td style="padding: 1rem;">
+                    <div style="font-size: 0.85rem; color: #334155; font-weight: 600;">${c.phone || '-'}</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">${c.cpf || 'Sem CPF'}</div>
+                </td>
+                <td style="padding: 1rem; text-align: center; font-weight: 700; color: #1e293b;">${c.total_purchases || 0}</td>
+                <td style="padding: 1rem; text-align: right; font-weight: 700; color: var(--primary);">
+                    ${parseFloat(c.total_spent || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <span style="padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: ${c.active ? '#dcfce7' : '#fee2e2'}; color: ${c.active ? '#166534' : '#991b1b'};">
+                        ${c.active ? 'ATIVO' : 'INATIVO'}
+                    </span>
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <button class="icon-btn" onclick="editCustomer(${c.id})" title="Editar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.editCustomer = (id) => {
+        const c = currentCustomers.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('customerModalTitle').innerText = 'Editar Cliente';
+        document.getElementById('customerId').value = c.id;
+        document.getElementById('customerName').value = c.name;
+        document.getElementById('customerCpf').value = c.cpf || '';
+        document.getElementById('customerPhone').value = c.phone || '';
+        document.getElementById('customerEmail').value = c.email || '';
+        document.getElementById('customerBirthDate').value = c.birth_date ? c.birth_date.split('T')[0] : '';
+        document.getElementById('customerNotes').value = c.notes || '';
+        document.getElementById('customerActive').checked = !!c.active;
+        document.getElementById('customerModal').style.display = 'flex';
+    };
+
+    document.getElementById('newCustomerBtn')?.addEventListener('click', () => {
+        document.getElementById('customerForm').reset();
+        document.getElementById('customerId').value = '';
+        document.getElementById('customerModalTitle').innerText = 'Novo Cliente';
+        document.getElementById('customerModal').style.display = 'flex';
+    });
+
+    document.getElementById('customerForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('customerId').value;
+        const payload = {
+            name: document.getElementById('customerName').value,
+            cpf: document.getElementById('customerCpf').value,
+            phone: document.getElementById('customerPhone').value,
+            email: document.getElementById('customerEmail').value,
+            birth_date: document.getElementById('customerBirthDate').value || null,
+            notes: document.getElementById('customerNotes').value,
+            active: document.getElementById('customerActive').checked ? 1 : 0
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/customers/${id}` : '/api/customers';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { ...fetchHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showToast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!');
+                document.getElementById('customerModal').style.display = 'none';
+                loadCustomers();
+            } else { showToast('Erro ao salvar cliente', 'error'); }
+        } catch (e) { showToast('Erro de conexão', 'error'); }
+    });
+
+    // --- VENDEDORES ---
+    const loadSellers = async () => {
+        try {
+            const res = await fetch('/api/sellers', { headers: fetchHeaders });
+            currentSellers = await res.json();
+            renderSellersTable(currentSellers);
+            updatePosSellerSelect();
+        } catch (e) { console.error('Erro ao carregar vendedores', e); }
+    };
+
+    const renderSellersTable = (data) => {
+        const body = document.getElementById('sellersTableBody');
+        if (!body) return;
+        body.innerHTML = data.map(s => `
+            <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 1rem;">
+                    <div style="font-weight: 700; color: #1e293b;">${s.name}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">${s.email || 'Sem e-mail'}</div>
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <span style="font-weight: 700; color: #10b981;">${s.commission_percentage}%</span>
+                </td>
+                <td style="padding: 1rem; text-align: center; font-weight: 700;">${s.total_sales || 0}</td>
+                <td style="padding: 1rem; text-align: right; font-weight: 700; color: var(--primary);">
+                    ${parseFloat(s.total_revenue || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <span style="padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: ${s.active ? '#dcfce7' : '#fee2e2'}; color: ${s.active ? '#166534' : '#991b1b'};">
+                        ${s.active ? 'ATIVO' : 'INATIVO'}
+                    </span>
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <button class="icon-btn" onclick="editSeller(${s.id})" title="Editar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.editSeller = (id) => {
+        const s = currentSellers.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById('sellerModalTitle').innerText = 'Editar Vendedor';
+        document.getElementById('sellerId').value = s.id;
+        document.getElementById('sellerName').value = s.name;
+        document.getElementById('sellerPhone').value = s.phone || '';
+        document.getElementById('sellerEmail').value = s.email || '';
+        document.getElementById('sellerCommission').value = s.commission_percentage || 0;
+        document.getElementById('sellerNotes').value = s.notes || '';
+        document.getElementById('sellerActive').checked = !!s.active;
+        document.getElementById('sellerModal').style.display = 'flex';
+    };
+
+    document.getElementById('newSellerBtn')?.addEventListener('click', () => {
+        document.getElementById('sellerForm').reset();
+        document.getElementById('sellerId').value = '';
+        document.getElementById('sellerModalTitle').innerText = 'Novo Vendedor';
+        document.getElementById('sellerModal').style.display = 'flex';
+    });
+
+    document.getElementById('sellerForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('sellerId').value;
+        const payload = {
+            name: document.getElementById('sellerName').value,
+            phone: document.getElementById('sellerPhone').value,
+            email: document.getElementById('sellerEmail').value,
+            commission_percentage: document.getElementById('sellerCommission').value,
+            notes: document.getElementById('sellerNotes').value,
+            active: document.getElementById('sellerActive').checked ? 1 : 0
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/sellers/${id}` : '/api/sellers';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { ...fetchHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showToast(id ? 'Vendedor atualizado!' : 'Vendedor cadastrado!');
+                document.getElementById('sellerModal').style.display = 'none';
+                loadSellers();
+            } else { showToast('Erro ao salvar vendedor', 'error'); }
+        } catch (e) { showToast('Erro de conexão', 'error'); }
+    });
+
+    // --- POS INTEGRATION ---
+    const updatePosSellerSelect = () => {
+        const select = document.getElementById('posSellerSelect');
+        if (!select) return;
+        const activeSellers = currentSellers.filter(s => s.active);
+        select.innerHTML = '<option value="">Selecione um vendedor...</option>' + 
+            activeSellers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    };
+
+    // Busca de Clientes no PDV
+    const posCustomerSearchInput = document.getElementById('posCustomerSearch');
+    const posCustomerResults = document.getElementById('posCustomerResults');
+
+    posCustomerSearchInput?.addEventListener('input', async (e) => {
+        const term = e.target.value;
+        if (term.length < 2) {
+            posCustomerResults.style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/customers/search?q=${term}`, { headers: fetchHeaders });
+            const customers = await res.json();
+            if (customers.length > 0) {
+                posCustomerResults.innerHTML = customers.map(c => `
+                    <div class="customer-result-item" onclick="selectCustomerForPos(${c.id}, '${c.name}')" 
+                         style="padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s;">
+                        <div style="font-weight: 700; font-size: 0.85rem; color: #1e293b;">${c.name}</div>
+                        <div style="font-size: 0.7rem; color: #64748b;">${c.cpf || ''} ${c.phone ? '· ' + c.phone : ''}</div>
+                    </div>
+                `).join('');
+                posCustomerResults.style.display = 'block';
+            } else {
+                posCustomerResults.style.display = 'none';
+            }
+        } catch (e) { console.error(e); }
+    });
+
+    window.selectCustomerForPos = (id, name) => {
+        selectedCustomerId = id;
+        document.getElementById('posCustomerSearch').value = '';
+        document.getElementById('posCustomerResults').style.display = 'none';
+        document.getElementById('selectedCustomerName').innerText = name;
+        document.getElementById('selectedCustomerDisplay').style.display = 'flex';
+        posCustomerSearchInput.parentElement.style.display = 'none';
+    };
+
+    window.clearSelectedCustomer = () => {
+        selectedCustomerId = null;
+        document.getElementById('selectedCustomerDisplay').style.display = 'none';
+        if (posCustomerSearchInput) posCustomerSearchInput.parentElement.style.display = 'block';
+    };
+
+    document.getElementById('clearCustomerBtn')?.addEventListener('click', clearSelectedCustomer);
+
+    document.getElementById('posQuickAddCustomerBtn')?.addEventListener('click', () => {
+        document.getElementById('customerForm').reset();
+        document.getElementById('customerId').value = '';
+        document.getElementById('customerModalTitle').innerText = 'Cadastro Rápido de Cliente';
+        document.getElementById('customerModal').style.display = 'flex';
+    });
+
+    // Close Modals
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        });
+    });
+
+    // Iniciar Módulos
+    loadCustomers();
+    loadSellers();
 
     // Load dashboard if initial section
     if (document.getElementById('dashboard').classList.contains('active')) {
