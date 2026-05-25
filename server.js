@@ -162,7 +162,7 @@ app.get('/api/cash/history', verifyToken, async (req, res) => {
     try {
         const tenant_id = req.user.tenant_id;
         const [rows] = await pool.query(
-            'SELECT * FROM cash_sessions WHERE tenant_id = ? AND status = "closed" ORDER BY closed_at DESC',
+            'SELECT * FROM cash_sessions WHERE tenant_id = ? ORDER BY opened_at DESC',
             [tenant_id]
         );
         res.json(rows);

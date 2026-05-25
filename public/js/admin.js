@@ -2054,39 +2054,58 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!body) return;
 
             body.innerHTML = sessions.length ? sessions.map(s => {
-                const diff = Number(s.closing_balance_actual) - Number(s.closing_balance_expected);
+                const isOpen = s.status === 'open';
+                const diff = !isOpen ? (Number(s.closing_balance_actual) - Number(s.closing_balance_expected)) : 0;
+                
                 let badgeStyle = 'background: #dcfce7; color: #166534;'; // OK
                 let badgeText = 'CORRETO';
 
-                if (diff > 0) {
-                    badgeStyle = 'background: #eff6ff; color: #1e40af;'; // SOBRA
-                    badgeText = `SOBRA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
-                } else if (diff < 0) {
-                    badgeStyle = 'background: #fee2e2; color: #991b1b;'; // QUEBRA
-                    badgeText = `QUEBRA (${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+                if (!isOpen) {
+                    if (diff > 0) {
+                        badgeStyle = 'background: #eff6ff; color: #1e40af;'; // SOBRA
+                        badgeText = `SOBRA (+${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+                    } else if (diff < 0) {
+                        badgeStyle = 'background: #fee2e2; color: #991b1b;'; // QUEBRA
+                        badgeText = `QUEBRA (${diff.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+                    }
+                } else {
+                    badgeStyle = 'background: #fef9c3; color: #854d0e;'; // PROCESSANDO
+                    badgeText = 'PROCESSANDO';
                 }
 
                 return `
-                    <tr style="border-bottom: 1px solid #f3f4f6; font-size: 0.9rem;">
+                    <tr style="border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; ${isOpen ? 'background: #fdfcf0;' : ''}">
                         <td style="padding: 1rem;">
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${new Date(s.closed_at).toLocaleDateString('pt-BR')}</div>
-                            <div style="font-size: 0.75rem; color: #10b981; display: flex; align-items: center; gap: 4px;">
-                                <span style="font-weight: 700; opacity: 0.7;">ABR:</span> ${new Date(s.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            <div style="font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                                ${new Date(s.opened_at).toLocaleDateString('pt-BR')}
+                                ${isOpen ? '<span class="pulse" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>' : ''}
                             </div>
-                            <div style="font-size: 0.75rem; color: #ef4444; display: flex; align-items: center; gap: 4px;">
-                                <span style="font-weight: 700; opacity: 0.7;">FEC:</span> ${new Date(s.closed_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            <div style="font-size: 0.75rem; color: #10b981; display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                                <span style="font-weight: 800; opacity: 0.8; background: #dcfce7; padding: 1px 4px; border-radius: 3px; font-size: 0.65rem;">ABR</span> 
+                                <span>${new Date(s.opened_at).toLocaleDateString('pt-BR')} ${new Date(s.opened_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
+                            ${!isOpen ? `
+                            <div style="font-size: 0.75rem; color: #ef4444; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-weight: 800; opacity: 0.8; background: #fee2e2; padding: 1px 4px; border-radius: 3px; font-size: 0.65rem;">FEC</span> 
+                                <span>${new Date(s.closed_at).toLocaleDateString('pt-BR')} ${new Date(s.closed_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            ` : `
+                            <div style="font-size: 0.75rem; color: #64748b; font-style: italic;">Aguardando fechamento...</div>
+                            `}
                         </td>
-                        <td style="padding: 1rem; color: #4b5563;">${s.closed_by || 'Sistema'}</td>
-                        <td style="padding: 1rem; text-align: right; color: #6b7280;">${Number(s.closing_balance_expected).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                        <td style="padding: 1rem; text-align: right; font-weight: 600; color: #1f2937;">${Number(s.closing_balance_actual).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        <td style="padding: 1rem; color: #4b5563;">${isOpen ? '-' : (s.closed_by || 'Sistema')}</td>
+                        <td style="padding: 1rem; text-align: right; color: #6b7280;">${isOpen ? '-' : Number(s.closing_balance_expected).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                        <td style="padding: 1rem; text-align: right; font-weight: 600; color: #1f2937;">${isOpen ? '-' : Number(s.closing_balance_actual).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         <td style="padding: 1rem; text-align: center;">
                             <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700; ${badgeStyle}">
                                 ${badgeText}
                             </span>
                         </td>
                         <td style="padding: 1rem; text-align: center;">
-                            <span style="padding: 0.25rem 0.5rem; background: #f3f4f6; color: #6b7280; border-radius: 4px; font-size: 0.7rem;">ENCERRADO</span>
+                            ${isOpen ? 
+                                '<span style="padding: 0.25rem 0.6rem; background: #10b981; color: white; border-radius: 4px; font-size: 0.7rem; font-weight: 700; animation: pulse 2s infinite;">ABERTO</span>' : 
+                                '<span style="padding: 0.25rem 0.6rem; background: #f3f4f6; color: #6b7280; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">ENCERRADO</span>'
+                            }
                         </td>
                     </tr>
                 `;
@@ -2105,12 +2124,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const badge = document.getElementById('cashStatusBadge');
             const closedView = document.getElementById('cashClosedView');
             const openView = document.getElementById('cashOpenView');
+            
+            // Global Status Indicator (Topbar)
+            const gStatus = document.getElementById('globalCashStatus');
+            const gDot = document.getElementById('globalCashStatusDot');
+            const gText = document.getElementById('globalCashStatusText');
 
             if (!session) {
                 if (badge) {
                     badge.innerText = 'FECHADO';
                     badge.style.background = '#fee2e2';
                     badge.style.color = '#ef4444';
+                }
+                if (gStatus) {
+                    gStatus.style.background = '#fee2e2';
+                    gStatus.style.color = '#ef4444';
+                    gText.innerText = 'CAIXA FECHADO';
+                    gDot.style.background = '#ef4444';
+                    gDot.classList.remove('pulse');
                 }
                 if (closedView) closedView.style.display = 'block';
                 if (openView) openView.style.display = 'none';
@@ -2119,6 +2150,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     badge.innerText = 'ABERTO';
                     badge.style.background = '#dcfce7';
                     badge.style.color = '#10b981';
+                }
+                if (gStatus) {
+                    gStatus.style.background = '#dcfce7';
+                    gStatus.style.color = '#10b981';
+                    gText.innerText = 'CAIXA ABERTO';
+                    gDot.style.background = '#10b981';
+                    gDot.classList.add('pulse');
                 }
                 if (closedView) closedView.style.display = 'none';
                 if (openView) openView.style.display = 'block';
@@ -2605,13 +2643,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('posCustomerResults').style.display = 'none';
         document.getElementById('selectedCustomerName').innerText = name;
         document.getElementById('selectedCustomerDisplay').style.display = 'flex';
-        posCustomerSearchInput.parentElement.style.display = 'none';
+        document.getElementById('posCustomerSearchWrapper').style.display = 'none';
     };
 
     window.clearSelectedCustomer = () => {
         selectedCustomerId = null;
         document.getElementById('selectedCustomerDisplay').style.display = 'none';
-        if (posCustomerSearchInput) posCustomerSearchInput.parentElement.style.display = 'block';
+        document.getElementById('posCustomerSearchWrapper').style.display = 'flex';
     };
 
     document.getElementById('clearCustomerBtn')?.addEventListener('click', clearSelectedCustomer);

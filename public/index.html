@@ -114,12 +114,14 @@
         <div class="sidebar-footer" style="padding: 1rem; border-top: 1px solid #f3f4f6; text-align: center;">
             <a href="https://vwebtech.com.br" target="_blank"
                 style="text-decoration: none; display: block; opacity: 0.6; transition: all 0.3s ease;"
-                onmouseover="this.style.opacity='1'; this.querySelector('img').style.transform='scale(1.2)'"
-                onmouseout="this.style.opacity='0.6'; this.querySelector('img').style.transform='scale(1)'">
+                onmouseover="this.style.opacity='1'"
+                onmouseout="this.style.opacity='0.6'">
                 <span class="created-by"
                     style="display: block; font-size: 0.7rem; color: #9ca3af; margin-bottom: 0.3rem;">Created by</span>
-                <img src="img/logo-vwebtech.png" alt="VWebTech Logo" class="footer-logo"
-                    style="width: 80px; transition: transform 0.3s ease;">
+                <div class="footer-logo-mask" style="width: 110px; height: 30px; overflow: hidden; transition: all var(--transition) ease; margin: 0 auto; display: flex; align-items: center; justify-content: flex-start;">
+                    <img src="img/logo-vwebtech.png" alt="VWebTech Logo" class="footer-logo-img"
+                        style="height: 25px; width: auto; min-width: 110px; object-fit: contain; object-position: left;">
+                </div>
             </a>
         </div>
     </aside>
@@ -135,9 +137,15 @@
                 <span id="topbarStoreName" style="font-weight: 600; font-size: 1.1rem; color: var(--text-main);">ERP
                     Pro</span>
             </div>
-            <div class="user-info">
-                <span class="user-name">Carregando...</span>
-                <div class="user-avatar">?</div>
+            <div class="user-info" style="display: flex; align-items: center; gap: 1.5rem;">
+                <div id="globalCashStatus" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; transition: all 0.3s ease;">
+                    <span id="globalCashStatusDot" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></span>
+                    <span id="globalCashStatusText">Carregando...</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span class="user-name">Carregando...</span>
+                    <div class="user-avatar">?</div>
+                </div>
             </div>
         </header>
 
@@ -345,36 +353,8 @@
                     style="flex: 1; background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                     <h3>Resumo da Venda</h3>
                     
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px dashed #e5e7eb;">
-                        <!-- Seleção de Vendedor -->
-                        <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Vendedor</label>
-                            <select id="posSellerSelect" class="form-control" style="width: 100%; padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; border: 1px solid #d1d5db;">
-                                <option value="">Selecione um vendedor...</option>
-                                <!-- JS Render -->
-                            </select>
-                        </div>
-                        <!-- Seleção de Cliente -->
-                        <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Cliente (Opcional)</label>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <div style="position: relative; flex: 1;">
-                                    <input type="text" id="posCustomerSearch" placeholder="Buscar cliente..." style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2rem; border-radius: 6px; font-size: 0.85rem; border: 1px solid #d1d5db;">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="2" style="position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <!-- Lista de resultados flutuante -->
-                                    <div id="posCustomerResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto;"></div>
-                                </div>
-                                <button id="posQuickAddCustomerBtn" title="Cadastro Rápido" style="padding: 0 0.75rem; background: #f8fafc; border: 1px solid #d1d5db; border-radius: 6px; color: #475569; cursor: pointer;">+</button>
-                            </div>
-                            <div id="selectedCustomerDisplay" style="display: none; margin-top: 0.5rem; background: #f0f9ff; padding: 0.5rem; border-radius: 6px; border: 1px solid #bae6fd; align-items: center; justify-content: space-between;">
-                                <span style="font-size: 0.8rem; font-weight: 600; color: #0369a1;" id="selectedCustomerName"></span>
-                                <button type="button" id="clearCustomerBtn" style="background: none; border: none; color: #ef4444; font-size: 1rem; cursor: pointer;">&times;</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="posCartItems"
-                        style="margin-top: 1rem; min-height: 200px; max-height: 300px; overflow-y: auto;">
-                        <p style="color: #6b7280; font-size: 0.9rem;">Nenhum item adicionado.</p>
+                    <div id="posCartItems" style="flex: 1; overflow-y: auto; margin-bottom: 1rem; padding-right: 0.5rem;">
+                        <!-- Itens do carrinho renderizados aqui via JS -->
                     </div>
                     <div class="pos-total"
                         style="margin-top: 1.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
@@ -718,7 +698,7 @@
             </div>
         </div>
 
-        <div id="configuracao" class="content-section">
+        <div id="lojistas" class="content-section">
             <div class="section-header-flex"
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h1>Gestão de Lojistas</h1>
@@ -976,7 +956,34 @@
             style="background: white; padding: 2rem; border-radius: 12px; width: 100%; max-width: 500px;">
             <h2 style="margin-bottom: 1.5rem;">Finalizar Venda</h2>
             <form id="checkoutForm">
+                <!-- Seleção de Vendedor -->
                 <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Vendedor</label>
+                    <select id="posSellerSelect" class="form-control" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #d1d5db;">
+                        <option value="">Selecione um vendedor...</option>
+                        <!-- JS Render -->
+                    </select>
+                </div>
+
+                <!-- Seleção de Cliente -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Cliente (Opcional)</label>
+                    <div id="posCustomerSearchWrapper" style="display: flex; gap: 0.5rem;">
+                        <div style="position: relative; flex: 1;">
+                            <input type="text" id="posCustomerSearch" placeholder="Buscar por nome, CPF ou tel..." style="width: 100%; padding: 0.5rem 0.5rem 0.5rem 2rem; border-radius: 4px; border: 1px solid #d1d5db;">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="2" style="position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <!-- Lista de resultados flutuante -->
+                            <div id="posCustomerResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                        <button type="button" id="posQuickAddCustomerBtn" title="Cadastro Rápido" style="padding: 0 0.75rem; background: #f8fafc; border: 1px solid #d1d5db; border-radius: 6px; color: #475569; cursor: pointer;">+</button>
+                    </div>
+                    <div id="selectedCustomerDisplay" style="display: none; margin-top: 0.5rem; background: #f0f9ff; padding: 0.5rem; border-radius: 6px; border: 1px solid #bae6fd; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #0369a1;" id="selectedCustomerName"></span>
+                        <button type="button" id="clearCustomerBtn" style="background: none; border: none; color: #ef4444; font-size: 1rem; cursor: pointer;">&times;</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Forma de Pagamento</label>
                     <select id="paymentMethod" name="paymentMethod" class="form-control"
                         style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
