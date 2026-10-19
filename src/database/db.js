@@ -106,6 +106,21 @@ async function initDB() {
         `);
 
         await pool.query(`
+            CREATE TABLE IF NOT EXISTS inventory_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tenant_id INT NOT NULL,
+                product_id INT NOT NULL,
+                variant_id INT NULL, 
+                quantity_change INT NOT NULL,
+                new_quantity INT NOT NULL, 
+                reason VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            );
+        `)
+        
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS product_attribute_values (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 attribute_id INT,
@@ -144,17 +159,30 @@ async function initDB() {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS sales (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                tenant_id INT,
-                total_revenue DECIMAL(10, 2) NOT NULL,
-                total_cost DECIMAL(10, 2) NOT NULL,
-                total_profit DECIMAL(10, 2) NOT NULL,
-                payment_method VARCHAR(50),
+                tenant_id INT NOT NULL,
+                session_id INT NULL,
+                customer_id INT NULL,
+                seller_id INT NULL,
+                total_revenue DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                total_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                total_profit DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                items JSON NULL,
+                payment_method VARCHAR(50) NOT NULL,
                 installments INT DEFAULT 1,
-                fee DECIMAL(10, 2) DEFAULT 0,
-                discount DECIMAL(10, 2) DEFAULT 0,
+                fee DECIMAL(10, 2) DEFAULT 0.00,
+                discount DECIMAL(10, 2) DEFAULT 0.00,
+                sale_date DATE NOT NULL,
+                sale_time TIME NOT NULL,
+                status VARCHAR(50) DEFAULT 'completed',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
-            )
+                cancel_reason VARCHAR(255) NULL,
+                cancel_responsible VARCHAR(255) NULL,
+                canceled_at DATETIME NULL,
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (session_id) REFERENCES cash_sessions(id) ON DELETE SET NULL,
+                FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+                FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE SET NULL
+            );
         `);
 
         // Seed Default Tenant & User

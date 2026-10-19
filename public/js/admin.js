@@ -1575,6 +1575,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const attributesMap = {};
                 // Usamos a string de descrição ou o variations_data se disponível
                 const varData = typeof product.variations_data === 'string' ? JSON.parse(product.variations_data) : product.variations_data;
+
+                console.log(varData)
                 
                 if (varData && varData.attributes) {
                     container.innerHTML = varData.attributes.map(attr => `
