@@ -156,6 +156,63 @@ async function initDB() {
             )
         `);
 
+        
+        // Sessões de caixa
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS cash_sessions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tenant_id INT NOT NULL,
+                user_id INT NULL,
+                opening_balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+                status VARCHAR(30) NOT NULL DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                closed_at DATETIME NULL,
+                FOREIGN KEY (tenant_id)
+                    REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id)
+                    REFERENCES users(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB
+        `);
+
+        // Clientes
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS customers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tenant_id INT NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                cpf VARCHAR(14) NULL,
+                phone VARCHAR(30) NULL,
+                email VARCHAR(255) NULL,
+                birth_date DATE NULL,
+                notes TEXT NULL,
+                active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (tenant_id)
+                    REFERENCES tenants(id) ON DELETE CASCADE,
+                INDEX idx_customers_tenant (tenant_id),
+                INDEX idx_customers_name (name)
+            ) ENGINE=InnoDB
+        `);
+
+        // Vendedores
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS sellers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tenant_id INT NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                phone VARCHAR(30) NULL,
+                email VARCHAR(255) NULL,
+                commission_percentage DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                notes TEXT NULL,
+                active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (tenant_id)
+                    REFERENCES tenants(id) ON DELETE CASCADE,
+                INDEX idx_sellers_tenant (tenant_id),
+                INDEX idx_sellers_name (name)
+            ) ENGINE=InnoDB
+        `);
+
         await pool.query(`
             CREATE TABLE IF NOT EXISTS sales (
                 id INT AUTO_INCREMENT PRIMARY KEY,
